@@ -29,7 +29,7 @@ Bienvenido al repositorio de Microservicios Experimentales, una colección de mi
 Para utilizar estos microservicios, clona el repositorio y sigue las instrucciones individuales en cada carpeta de servicio para su instalación y ejecución.
 
 ```bash
-git clone [[URL del repositorio]](https://github.com/miguelvidalbellido/desarrollo_microservicios.git)
+git clone https://github.com/miguelvidalbellido/desarrollo_microservicios.git
 ```
 
 ## Contribuciones
