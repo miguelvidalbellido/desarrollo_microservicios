@@ -1,0 +1,14 @@
+{
+    "code": 8,
+    "message": "Undefined property: FacturaScripts\\Core\\Model\\FacturaCliente::$url",
+    "file": "\/Plugins\/ObtenerFacturaUrl\/Controller\/ApiObtenerFacturaUrlController.php",
+    "line": 28,
+    "hash": "876d958dd70408d052c40ba2885d576d",
+    "url": "\/api\/3\/prueba",
+    "report_url": "https:\/\/facturascripts.com\/errores\/876d958dd70408d052c40ba2885d576d",
+    "report_qr": "https:\/\/api.qrserver.com\/v1\/create-qr-code\/?size=150x150&data=https%3A%2F%2Ffacturascripts.com%2Ferrores%2F876d958dd70408d052c40ba2885d576d",
+    "core_version": 2023.16,
+    "php_version": "7.4.33",
+    "os": "Linux",
+    "plugin_list": "ObtenerFacturaUrl"
+}

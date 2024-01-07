@@ -1,0 +1,14 @@
+{
+    "code": 1,
+    "message": "Uncaught Error: Class &#39;\\FacturaScripts\\Core\\Error\\InvalidApiVersion&#39; not found in \/Core\/Kernel.php:210\n\nStack trace:\n#0 \/Core\/Kernel.php(166): FacturaScripts\\Core\\Kernel::getErrorHandler(Object(FacturaScripts\\Core\\KernelException))\n#1 \/index.php(63): FacturaScripts\\Core\\Kernel::run(&#39;\/api\/test&#39;)\n#2 {main}\n  thrown",
+    "file": "\/Core\/Kernel.php",
+    "line": 210,
+    "hash": "8401995f30d0056fda94afd92bd49d4b",
+    "url": "\/api\/test",
+    "report_url": "https:\/\/facturascripts.com\/errores\/8401995f30d0056fda94afd92bd49d4b",
+    "report_qr": "https:\/\/api.qrserver.com\/v1\/create-qr-code\/?size=150x150&data=https%3A%2F%2Ffacturascripts.com%2Ferrores%2F8401995f30d0056fda94afd92bd49d4b",
+    "core_version": 2023.16,
+    "php_version": "7.4.33",
+    "os": "Linux",
+    "plugin_list": "ObtenerFacturaUrl"
+}

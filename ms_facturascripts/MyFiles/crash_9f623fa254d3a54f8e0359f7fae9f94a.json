@@ -1,0 +1,14 @@
+{
+    "code": 1,
+    "message": "Uncaught Error: Class &#39;FacturaScripts\\Plugins\\ObtenerFacturaUrl\\Controller\\ApiController&#39; not found in \/Plugins\/ObtenerFacturaUrl\/Controller\/ApiObtenerFacturaUrlController.php:7\n\nStack trace:\n#0 \/vendor\/composer\/ClassLoader.php(571): include()\n#1 \/vendor\/composer\/ClassLoader.php(428): Composer\\Autoload\\includeFile(&#39;\/v...&#39;)\n#2 [internal function]: Composer\\Autoload\\ClassLoader-&gt;loadClass(&#39;FacturaScripts\\\\...&#39;)\n#3 \/Dinamic\/Controller\/ApiObtenerFacturaUrlController.php(7): spl_autoload_call(&#39;FacturaScripts\\\\...&#39;)\n#4 \/vendor\/composer\/ClassLoader.php(571): include(&#39;\/D...&#39;)\n#5 \/vendor\/composer\/ClassLoader.php(428): Composer\\Autoload\\includeFile(&#39;\/v...&#39;)\n#6 [internal function]: Composer\\Autoload\\ClassLoader-&gt;loadClass(&#39;FacturaScripts\\\\...&#39;)\n#7 [internal function]: spl_autoload_call(&#39;FacturaScripts\\\\...&#39;)\n#8 \/Core\/Base\/PluginDeploy.php(101): class_exists(&#39;\\\\FacturaScripts...&#39;)\n#9 \/var\/www\/h",
+    "file": "\/Plugins\/ObtenerFacturaUrl\/Controller\/ApiObtenerFacturaUrlController.php",
+    "line": 7,
+    "hash": "9f623fa254d3a54f8e0359f7fae9f94a",
+    "url": "\/AdminPlugins",
+    "report_url": "https:\/\/facturascripts.com\/errores\/9f623fa254d3a54f8e0359f7fae9f94a",
+    "report_qr": "https:\/\/api.qrserver.com\/v1\/create-qr-code\/?size=150x150&data=https%3A%2F%2Ffacturascripts.com%2Ferrores%2F9f623fa254d3a54f8e0359f7fae9f94a",
+    "core_version": 2023.16,
+    "php_version": "7.4.33",
+    "os": "Linux",
+    "plugin_list": "ObtenerFacturaUrl"
+}

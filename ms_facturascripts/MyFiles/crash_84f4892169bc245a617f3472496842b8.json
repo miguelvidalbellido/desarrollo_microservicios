@@ -1,0 +1,14 @@
+{
+    "code": 1,
+    "message": "Uncaught Error: Call to undefined method FacturaScripts\\Core\\Model\\FacturaCliente::allFromCliente() in \/Plugins\/ObtenerFacturaUrl\/Controller\/ApiObtenerFacturaUrlController.php:17\n\nStack trace:\n#0 \/Core\/Template\/ApiController.php(112): FacturaScripts\\Plugins\\ObtenerFacturaUrl\\Controller\\ApiObtenerFacturaUrlController-&gt;runResource()\n#1 \/Core\/Kernel.php(294): FacturaScripts\\Core\\Template\\ApiController-&gt;run()\n#2 \/Core\/Kernel.php(162): FacturaScripts\\Core\\Kernel::runController(&#39;\/api\/3\/prueba&#39;)\n#3 \/index.php(63): FacturaScripts\\Core\\Kernel::run(&#39;\/api\/3\/prueba&#39;)\n#4 {main}\n  thrown",
+    "file": "\/Plugins\/ObtenerFacturaUrl\/Controller\/ApiObtenerFacturaUrlController.php",
+    "line": 17,
+    "hash": "84f4892169bc245a617f3472496842b8",
+    "url": "\/api\/3\/prueba",
+    "report_url": "https:\/\/facturascripts.com\/errores\/84f4892169bc245a617f3472496842b8",
+    "report_qr": "https:\/\/api.qrserver.com\/v1\/create-qr-code\/?size=150x150&data=https%3A%2F%2Ffacturascripts.com%2Ferrores%2F84f4892169bc245a617f3472496842b8",
+    "core_version": 2023.16,
+    "php_version": "7.4.33",
+    "os": "Linux",
+    "plugin_list": "ObtenerFacturaUrl"
+}

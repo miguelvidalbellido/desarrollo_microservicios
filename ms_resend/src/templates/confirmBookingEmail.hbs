@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            color: #333333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #000000;
+            color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            font-size: 24px;
+            color: #ffa500;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .content {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        .highlight {
+            color: #ffa500;
+        }
+        .button {
+            background-color: #ffa500;
+            color: #ffffff;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            ¡Reserva Confirmada!
+        </div>
+        <div class="content">
+            <p>Hola <span class="highlight">{{name}}</span>,</p>
+            <p>Estamos emocionados de informarte que tu reserva ha sido confirmada. Estamos ansiosos de recibirte y brindarte una experiencia maravillosa.</p>
+            <p>Detalles de tu reserva:</p>
+            <p><b>Fecha y Hora:</b> <span class="highlight">{{date}}</span><br>
+               <b>Número de personas:</b> <span class="highlight">{{capacity}}</span><br>
+               <b>Menu:</b> <span class="highlight">{{meal}}</span></p>
+            <p>Por favor, llega unos minutos antes de tu horario programado. Si necesitas modificar tu reserva, puedes hacerlo a través del siguiente enlace.</p>
+            <a href="[URL para gestionar reserva]" class="button">Gestionar Reserva</a>
+        </div>
+        <div class="footer">
+            Nos vemos pronto,<br>
+            <span class="highlight">Viberest</span>
+        </div>
+    </div>
+</body>
+</html>

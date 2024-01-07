@@ -1,0 +1,19 @@
+[
+    {
+        "compatible": true,
+        "description": "Plugin para obtener facturas en PDF codificadas en Base64 a trav\u00e9s de una API REST.",
+        "enabled": true,
+        "folder": "ObtenerFacturaUrl",
+        "hidden": false,
+        "installed": true,
+        "min_version": 2023,
+        "min_php": 7.3,
+        "name": "ObtenerFacturaUrl",
+        "order": 1,
+        "post_disable": false,
+        "post_enable": false,
+        "require": [],
+        "require_php": [],
+        "version": 1
+    }
+]

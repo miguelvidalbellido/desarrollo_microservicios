@@ -1,0 +1,14 @@
+{
+    "code": 0,
+    "message": "Method where does not exist on class FacturaScripts\\Core\\Model\\FacturaCliente.\n\nStack trace:\n#0 \/Plugins\/ObtenerFacturaUrl\/Controller\/ApiObtenerFacturaUrlController.php(24): FacturaScripts\\Core\\Model\\FacturaCliente-&gt;__call(&#39;where&#39;, Array)\n#1 \/Core\/Template\/ApiController.php(112): FacturaScripts\\Plugins\\ObtenerFacturaUrl\\Controller\\ApiObtenerFacturaUrlController-&gt;runResource()\n#2 \/Core\/Kernel.php(294): FacturaScripts\\Core\\Template\\ApiController-&gt;run()\n#3 \/Core\/Kernel.php(162): FacturaScripts\\Core\\Kernel::runController(&#39;\/api\/3\/facturas...&#39;)\n#4 \/index.php(63): FacturaScripts\\Core\\Kernel::run(&#39;\/api\/3\/facturas...&#39;)\n#5 {main}",
+    "file": "\/Core\/Base\/ExtensionsTrait.php",
+    "line": 54,
+    "hash": "574135758a8198f19f9383534cbf6276",
+    "url": "\/api\/3\/facturaspdf",
+    "report_url": "https:\/\/facturascripts.com\/errores\/574135758a8198f19f9383534cbf6276",
+    "report_qr": "https:\/\/api.qrserver.com\/v1\/create-qr-code\/?size=150x150&data=https%3A%2F%2Ffacturascripts.com%2Ferrores%2F574135758a8198f19f9383534cbf6276",
+    "core_version": 2023.16,
+    "php_version": "7.4.33",
+    "os": "Linux",
+    "plugin_list": "ObtenerFacturaUrl"
+}

@@ -1,0 +1,14 @@
+{
+    "code": 8,
+    "message": "Undefined index: parametro",
+    "file": "\/Plugins\/ObtenerFacturaUrl\/Controller\/ApiObtenerFacturaUrlController.php",
+    "line": 13,
+    "hash": "38a5caf24ccbf43b2914b5cd021eebdc",
+    "url": "\/api\/3\/prueba",
+    "report_url": "https:\/\/facturascripts.com\/errores\/38a5caf24ccbf43b2914b5cd021eebdc",
+    "report_qr": "https:\/\/api.qrserver.com\/v1\/create-qr-code\/?size=150x150&data=https%3A%2F%2Ffacturascripts.com%2Ferrores%2F38a5caf24ccbf43b2914b5cd021eebdc",
+    "core_version": 2023.16,
+    "php_version": "7.4.33",
+    "os": "Linux",
+    "plugin_list": "ObtenerFacturaUrl"
+}

@@ -1,0 +1,14 @@
+{
+    "code": 2,
+    "message": "A non-numeric value encountered",
+    "file": "\/Plugins\/ObtenerFacturaUrl\/Controller\/ApiObtenerFacturaUrlController.php",
+    "line": 38,
+    "hash": "a3bcb2f9184f1ac853db5fbb9849f8b9",
+    "url": "\/api\/3\/facturaspdf",
+    "report_url": "https:\/\/facturascripts.com\/errores\/a3bcb2f9184f1ac853db5fbb9849f8b9",
+    "report_qr": "https:\/\/api.qrserver.com\/v1\/create-qr-code\/?size=150x150&data=https%3A%2F%2Ffacturascripts.com%2Ferrores%2Fa3bcb2f9184f1ac853db5fbb9849f8b9",
+    "core_version": 2023.16,
+    "php_version": "7.4.33",
+    "os": "Linux",
+    "plugin_list": "ObtenerFacturaUrl"
+}
