@@ -23,7 +23,6 @@ use Exception;
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
 use FacturaScripts\Core\Lib\API\Base\APIResourceClass;
 use FacturaScripts\Core\Model\Base\ModelClass;
-use FacturaScripts\Core\Tools;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -49,16 +48,16 @@ class APIModel extends APIResourceClass
     public function doDELETE(): bool
     {
         if (empty($this->params) || false === $this->model->loadFromCode($this->params[0])) {
-            $this->setError(Tools::lang()->trans('record-not-found'));
+            $this->setError($this->toolBox()->i18n()->trans('record-not-found'));
             return false;
         }
 
         if ($this->model->delete()) {
-            $this->setOk(Tools::lang()->trans('record-deleted-correctly'), $this->model->toArray());
+            $this->setOk($this->toolBox()->i18n()->trans('record-deleted-correctly'), $this->model->toArray());
             return true;
         }
 
-        $this->setError(Tools::lang()->trans('record-deleted-error'));
+        $this->setError($this->toolBox()->i18n()->trans('record-deleted-error'));
         return false;
     }
 
@@ -90,7 +89,7 @@ class APIModel extends APIResourceClass
 
         // record not found
         if (false === $this->model->loadFromCode($this->params[0])) {
-            $this->setError(Tools::lang()->trans('record-not-found'));
+            $this->setError($this->toolBox()->i18n()->trans('record-not-found'));
             return false;
         }
 
@@ -111,10 +110,10 @@ class APIModel extends APIResourceClass
         $param0 = empty($this->params) ? '' : $this->params[0];
         $code = $values[$field] ?? $param0;
         if ($this->model->loadFromCode($code)) {
-            $this->setError(Tools::lang()->trans('duplicate-record'), $this->model->toArray());
+            $this->setError($this->toolBox()->i18n()->trans('duplicate-record'), $this->model->toArray());
             return false;
         } elseif (empty($values)) {
-            $this->setError(Tools::lang()->trans('no-data-received-form'));
+            $this->setError($this->toolBox()->i18n()->trans('no-data-received-form'));
             return false;
         }
 
@@ -138,10 +137,10 @@ class APIModel extends APIResourceClass
         $param0 = empty($this->params) ? '' : $this->params[0];
         $code = $values[$field] ?? $param0;
         if (false === $this->model->loadFromCode($code)) {
-            $this->setError(Tools::lang()->trans('record-not-found'));
+            $this->setError($this->toolBox()->i18n()->trans('record-not-found'));
             return false;
         } elseif (empty($values)) {
-            $this->setError(Tools::lang()->trans('no-data-received-form'));
+            $this->setError($this->toolBox()->i18n()->trans('no-data-received-form'));
             return false;
         }
 
@@ -287,6 +286,9 @@ class APIModel extends APIResourceClass
         return $where;
     }
 
+    /**
+     * @return bool
+     */
     protected function listAll(): bool
     {
         $filter = $this->getRequestArray('filter');
@@ -331,15 +333,18 @@ class APIModel extends APIResourceClass
         return strtolower($text) . 'es';
     }
 
+    /**
+     * @return bool
+     */
     private function saveResource(): bool
     {
         if ($this->model->save()) {
-            $this->setOk(Tools::lang()->trans('record-updated-correctly'), $this->model->toArray());
+            $this->setOk($this->toolBox()->i18n()->trans('record-updated-correctly'), $this->model->toArray());
             return true;
         }
 
-        $message = Tools::lang()->trans('record-save-error');
-        foreach (Tools::log()->read('', ['critical', 'error', 'info', 'notice', 'warning']) as $log) {
+        $message = $this->toolBox()->i18n()->trans('record-save-error');
+        foreach ($this->toolBox()->log()->read('', ['critical', 'error', 'info', 'notice', 'warning']) as $log) {
             $message .= ' - ' . $log['message'];
         }
 

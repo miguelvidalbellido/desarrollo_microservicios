@@ -49,37 +49,37 @@ class ListPais extends ListController
         $this->createViewCities();
     }
 
-    protected function createViewCities(string $viewName = 'ListCiudad'): void
+    protected function createViewCities(string $viewName = 'ListCiudad')
     {
-        $this->addView($viewName, 'Ciudad', 'cities', 'fas fa-city')
-            ->addOrderBy(['ciudad'], 'name')
-            ->addOrderBy(['idprovincia'], 'province')
-            ->addSearchFields(['ciudad']);
+        $this->addView($viewName, 'Ciudad', 'cities', 'fas fa-city');
+        $this->addOrderBy($viewName, ['ciudad'], 'name');
+        $this->addOrderBy($viewName, ['idprovincia'], 'province');
+        $this->addSearchFields($viewName, ['ciudad']);
     }
 
-    protected function createViewCountries(string $viewName = 'ListPais'): void
+    protected function createViewCountries(string $viewName = 'ListPais')
     {
-        $this->addView($viewName, 'Pais', 'countries', 'fas fa-globe-americas')
-            ->addOrderBy(['codpais'], 'code')
-            ->addOrderBy(['nombre'], 'name', 1)
-            ->addOrderBy(['codiso'], 'codiso')
-            ->addSearchFields(['nombre', 'codiso', 'codpais']);
+        $this->addView($viewName, 'Pais', 'countries', 'fas fa-globe-americas');
+        $this->addOrderBy($viewName, ['codpais'], 'code');
+        $this->addOrderBy($viewName, ['nombre'], 'name', 1);
+        $this->addOrderBy($viewName, ['codiso'], 'codiso');
+        $this->addSearchFields($viewName, ['nombre', 'codiso', 'codpais']);
     }
 
-    protected function createViewsDivisas(string $viewName = 'ListDivisa'): void
+    protected function createViewsDivisas(string $viewName = 'ListDivisa')
     {
-        $this->addView($viewName, 'Divisa', 'currency', 'fas fa-money-bill-alt')
-            ->addOrderBy(['coddivisa'], 'code')
-            ->addOrderBy(['descripcion'], 'description', 1)
-            ->addOrderBy(['codiso'], 'codiso')
-            ->addSearchFields(['descripcion', 'coddivisa']);
+        $this->addView($viewName, 'Divisa', 'currency', 'fas fa-money-bill-alt');
+        $this->addOrderBy($viewName, ['coddivisa'], 'code');
+        $this->addOrderBy($viewName, ['descripcion'], 'description', 1);
+        $this->addOrderBy($viewName, ['codiso'], 'codiso');
+        $this->addSearchFields($viewName, ['descripcion', 'coddivisa']);
     }
 
-    protected function createViewProvinces(string $viewName = 'ListProvincia'): void
+    protected function createViewProvinces(string $viewName = 'ListProvincia')
     {
-        $this->addView($viewName, 'Provincia', 'province', 'fas fa-map-signs')
-            ->addOrderBy(['provincia'], 'name')
-            ->addOrderBy(['codpais'], 'country')
-            ->addSearchFields(['provincia', 'codisoprov']);
+        $this->addView($viewName, 'Provincia', 'province', 'fas fa-map-signs');
+        $this->addOrderBy($viewName, ['provincia'], 'name');
+        $this->addOrderBy($viewName, ['codpais'], 'country');
+        $this->addSearchFields($viewName, ['provincia', 'codisoprov']);
     }
 }

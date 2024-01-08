@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FacturaScripts
- * Copyright (C) 2013-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2013-2022 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,8 +19,6 @@
 
 namespace FacturaScripts\Core\Model\Base;
 
-use FacturaScripts\Core\Tools;
-use FacturaScripts\Core\Validator;
 use FacturaScripts\Dinamic\Lib\RegimenIVA;
 use FacturaScripts\Dinamic\Model\FormaPago;
 use FacturaScripts\Dinamic\Model\Retencion;
@@ -33,6 +31,7 @@ use FacturaScripts\Dinamic\Model\Serie;
  */
 abstract class ComercialContact extends Contact
 {
+
     /**
      * Identifier code of the customer.
      *
@@ -127,6 +126,15 @@ abstract class ComercialContact extends Contact
         $this->regimeniva = RegimenIVA::defaultValue();
     }
 
+    /**
+     * @return array
+     * @deprecated since version 2022.5
+     */
+    public function getAdresses(): array
+    {
+        return $this->getAddresses();
+    }
+
     public function install(): string
     {
         // needed dependencies
@@ -165,15 +173,16 @@ abstract class ComercialContact extends Contact
     {
         $this->debaja = !empty($this->fechabaja);
 
-        $this->razonsocial = Tools::noHtml($this->razonsocial);
+        $utils = $this->toolBox()->utils();
+        $this->razonsocial = $utils->noHtml($this->razonsocial);
         if (empty($this->razonsocial)) {
             $this->razonsocial = $this->nombre;
         }
 
-        $this->web = Tools::noHtml($this->web);
+        $this->web = $utils->noHtml($this->web);
         // check if the web is a valid url
-        if (!empty($this->web) && false === Validator::url($this->web)) {
-            Tools::log()->warning('invalid-web', ['%web%' => $this->web]);
+        if (!empty($this->web) && false === self::toolBox()::utils()::isValidUrl($this->web)) {
+            self::toolBox()::i18nLog()->warning('invalid-web', ['%web%' => $this->web]);
             return false;
         }
 

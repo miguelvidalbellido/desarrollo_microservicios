@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FacturaScripts
- * Copyright (C) 2019-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2022 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,8 +19,6 @@
 
 namespace FacturaScripts\Core\Model;
 
-use FacturaScripts\Core\Tools;
-
 /**
  * Description of IdentificadorFiscal
  *
@@ -28,6 +26,7 @@ use FacturaScripts\Core\Tools;
  */
 class IdentificadorFiscal extends Base\ModelClass
 {
+
     use Base\ModelTrait;
 
     /**
@@ -64,12 +63,12 @@ class IdentificadorFiscal extends Base\ModelClass
     public function test(): bool
     {
         // escapamos el html
-        $this->codeid = Tools::noHtml($this->codeid);
-        $this->tipoidfiscal = Tools::noHtml($this->tipoidfiscal);
+        $this->codeid = self::toolBox()::utils()::noHtml($this->codeid);
+        $this->tipoidfiscal = self::toolBox()::utils()::noHtml($this->tipoidfiscal);
 
         // comprobamos que el campo tenga un valor válido
         if (empty($this->tipoidfiscal) || 1 !== preg_match('/^[A-Z0-9_\+\.\-]{1,25}$/i', $this->tipoidfiscal)) {
-            Tools::log()->error(
+            self::toolBox()::i18nLog()->error(
                 'invalid-alphanumeric-code',
                 ['%value%' => $this->tipoidfiscal, '%column%' => 'tipoidfiscal', '%min%' => '1', '%max%' => '25']
             );

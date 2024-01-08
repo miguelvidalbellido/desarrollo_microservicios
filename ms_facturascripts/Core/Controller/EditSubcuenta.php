@@ -22,7 +22,6 @@ namespace FacturaScripts\Core\Controller;
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
 use FacturaScripts\Core\Lib\ExtendedController\BaseView;
 use FacturaScripts\Core\Lib\ExtendedController\EditController;
-use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Lib\Accounting\Ledger;
 use FacturaScripts\Dinamic\Model\Cuenta;
 use FacturaScripts\Dinamic\Model\Ejercicio;
@@ -114,7 +113,7 @@ class EditSubcuenta extends EditController
         switch ($action) {
             case 'ledger':
                 if (false === $this->permissions->allowExport) {
-                    Tools::log()->warning('no-print-permission');
+                    $this->toolBox()->i18nLog()->warning('no-print-permission');
                     return true;
                 }
 
@@ -148,16 +147,16 @@ class EditSubcuenta extends EditController
             'grouped' => $request['groupingtype'] ?? false,
             'subaccount-from' => $subAccount->codsubcuenta
         ]);
-        $title = Tools::lang()->trans('ledger') . ' ' . $subAccount->codsubcuenta;
+        $title = self::toolBox()::i18n()->trans('ledger') . ' ' . $subAccount->codsubcuenta;
         $this->exportManager->newDoc($request['format'], $title);
 
         // añadimos la tabla de cabecera con la info del informe
         if ($request['format'] === 'PDF') {
             $titles = [[
-                Tools::lang()->trans('subaccount') => $subAccount->codsubcuenta,
-                Tools::lang()->trans('exercise') => $subAccount->codejercicio,
-                Tools::lang()->trans('from-date') => $request['dateFrom'],
-                Tools::lang()->trans('until-date') => $request['dateTo']
+                self::toolBox()::i18n()->trans('subaccount') => $subAccount->codsubcuenta,
+                self::toolBox()::i18n()->trans('exercise') => $subAccount->codejercicio,
+                self::toolBox()::i18n()->trans('from-date') => $request['dateFrom'],
+                self::toolBox()::i18n()->trans('until-date') => $request['dateTo']
             ]];
             $this->exportManager->addTablePage(array_keys($titles[0]), $titles);
         }
@@ -234,7 +233,7 @@ class EditSubcuenta extends EditController
     {
         $ids = $this->request->request->get('code', []);
         if (empty($ids)) {
-            Tools::log()->warning('no-selected-item');
+            $this->toolBox()->i18nLog()->warning('no-selected-item');
             return false;
         }
 
@@ -244,7 +243,7 @@ class EditSubcuenta extends EditController
             $row->setDottedStatus($value);
         }
 
-        Tools::log()->notice('record-updated-correctly');
+        $this->toolBox()->i18nLog()->notice('record-updated-correctly');
         return true;
     }
 

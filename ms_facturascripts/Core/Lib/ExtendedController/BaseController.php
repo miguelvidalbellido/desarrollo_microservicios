@@ -19,13 +19,11 @@
 
 namespace FacturaScripts\Core\Lib\ExtendedController;
 
-use Exception;
 use FacturaScripts\Core\Base\Controller;
 use FacturaScripts\Core\Base\ControllerPermissions;
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
 use FacturaScripts\Core\Lib\Widget\VisualItem;
 use FacturaScripts\Core\Model\Base\ModelClass;
-use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Lib\ExportManager;
 use FacturaScripts\Dinamic\Model\CodeModel;
 use FacturaScripts\Dinamic\Model\User;
@@ -71,7 +69,7 @@ abstract class BaseController extends Controller
     /**
      * List of views displayed by the controller.
      *
-     * @var BaseView[]
+     * @var BaseView[]|ListView[]
      */
     public $views = [];
 
@@ -108,47 +106,40 @@ abstract class BaseController extends Controller
      *
      * @param string $viewName
      * @param array $btnArray
-     * @return BaseView
      */
-    public function addButton(string $viewName, array $btnArray): BaseView
+    public function addButton(string $viewName, array $btnArray)
     {
-        if (!array_key_exists($viewName, $this->views)) {
-            throw new Exception('View not found: ' . $viewName);
-        }
-
         $rowType = isset($btnArray['row']) ? 'footer' : 'actions';
-        $row = $this->views[$viewName]->getRow($rowType);
+        $row = array_key_exists($viewName, $this->views) ? $this->views[$viewName]->getRow($rowType) : null;
         if ($row) {
             $row->addButton($btnArray);
         }
-
-        return $this->tab($viewName);
     }
 
     /**
      * @param string $viewName
-     * @param BaseView $view
-     * @return BaseView
+     * @param BaseView|ListView $view
      */
-    public function addCustomView(string $viewName, BaseView $view): BaseView
+    public function addCustomView(string $viewName, $view)
     {
         if ($viewName !== $view->getViewName()) {
-            throw new Exception('$viewName must be equals to $view->name');
+            $this->toolBox()->log()->error('$viewName must be equals to $view->name');
+            return;
         }
 
         $view->loadPageOptions($this->user);
-
         $this->views[$viewName] = $view;
         if (empty($this->active)) {
             $this->active = $viewName;
         }
-
-        return $view;
     }
 
-    public function getCurrentView(): BaseView
+    /**
+     * @return BaseView|ListView
+     */
+    public function getCurrentView()
     {
-        return $this->tab($this->current);
+        return $this->views[$this->current];
     }
 
     /**
@@ -170,11 +161,16 @@ abstract class BaseController extends Controller
      *
      * @param string $viewName
      * @param string $property
+     *
      * @return mixed
      */
     public function getSettings(string $viewName, string $property)
     {
-        return $this->tab($viewName)->settings[$property] ?? null;
+        if (isset($this->views[$viewName])) {
+            return $this->views[$viewName]->settings[$property] ?? null;
+        }
+
+        return null;
     }
 
     /**
@@ -182,20 +178,13 @@ abstract class BaseController extends Controller
      *
      * @param string $viewName
      * @param string $fieldName
+     *
      * @return mixed
      */
     public function getViewModelValue(string $viewName, string $fieldName)
     {
-        return $this->tab($viewName)->model->{$fieldName} ?? null;
-    }
-
-    public function listView(string $viewName): ListView
-    {
-        if (isset($this->views[$viewName]) && $this->views[$viewName] instanceof ListView) {
-            return $this->views[$viewName];
-        }
-
-        throw new Exception('ListView not found: ' . $viewName);
+        $model = $this->views[$viewName]->model;
+        return $model->{$fieldName} ?? null;
     }
 
     /**
@@ -208,7 +197,6 @@ abstract class BaseController extends Controller
     public function privateCore(&$response, $user, $permissions)
     {
         parent::privateCore($response, $user, $permissions);
-
         VisualItem::setToken($this->multiRequestProtection->newToken());
 
         // Create the views to display
@@ -216,7 +204,7 @@ abstract class BaseController extends Controller
         $this->pipe('createViews');
     }
 
-    public function setCurrentView(string $viewName): void
+    public function setCurrentView(string $viewName)
     {
         $this->current = $viewName;
     }
@@ -227,20 +215,12 @@ abstract class BaseController extends Controller
      * @param string $viewName
      * @param string $property
      * @param mixed $value
-     * @return BaseView
      */
-    public function setSettings(string $viewName, string $property, $value): BaseView
-    {
-        return $this->tab($viewName)->setSettings($property, $value);
-    }
-
-    public function tab(string $viewName): BaseView
+    public function setSettings(string $viewName, string $property, $value): void
     {
         if (isset($this->views[$viewName])) {
-            return $this->views[$viewName];
+            $this->views[$viewName]->settings[$property] = $value;
         }
-
-        throw new Exception('View not found: ' . $viewName);
     }
 
     /**
@@ -263,14 +243,15 @@ abstract class BaseController extends Controller
         }
 
         $results = [];
+        $utils = $this->toolBox()->utils();
         foreach ($this->codeModel->search($data['source'], $data['fieldcode'], $data['fieldtitle'], $data['term'], $where) as $value) {
-            $results[] = ['key' => Tools::fixHtml($value->code), 'value' => Tools::fixHtml($value->description)];
+            $results[] = ['key' => $utils->fixHtml($value->code), 'value' => $utils->fixHtml($value->description)];
         }
 
         if (empty($results) && '0' == $data['strict']) {
             $results[] = ['key' => $data['term'], 'value' => $data['term']];
         } elseif (empty($results)) {
-            $results[] = ['key' => null, 'value' => Tools::lang()->trans('no-data')];
+            $results[] = ['key' => null, 'value' => $this->toolBox()->i18n()->trans('no-data')];
         }
 
         return $results;
@@ -319,7 +300,7 @@ abstract class BaseController extends Controller
     {
         // check user permissions
         if (false === $this->permissions->allowDelete || false === $this->views[$this->active]->settings['btnDelete']) {
-            Tools::log()->warning('not-allowed-delete');
+            $this->toolBox()->i18nLog()->warning('not-allowed-delete');
             return false;
         } elseif (false === $this->validateFormToken()) {
             return false;
@@ -328,7 +309,7 @@ abstract class BaseController extends Controller
         $model = $this->views[$this->active]->model;
         $codes = $this->request->request->get('code', '');
         if (empty($codes)) {
-            Tools::log()->warning('no-selected-item');
+            $this->toolBox()->i18nLog()->warning('no-selected-item');
             return false;
         }
 
@@ -351,26 +332,26 @@ abstract class BaseController extends Controller
             $model->clear();
             $this->dataBase->commit();
             if ($numDeletes > 0) {
-                Tools::log()->notice('record-deleted-correctly');
+                $this->toolBox()->i18nLog()->notice('record-deleted-correctly');
                 return true;
             }
         } elseif ($model->loadFromCode($codes) && $model->delete()) {
             // deleting a single row
-            Tools::log()->notice('record-deleted-correctly');
+            $this->toolBox()->i18nLog()->notice('record-deleted-correctly');
             $model->clear();
             return true;
         }
 
-        Tools::log()->warning('record-deleted-error');
+        $this->toolBox()->i18nLog()->warning('record-deleted-error');
         $model->clear();
         return false;
     }
 
     protected function exportAction()
     {
-        if (false === $this->views[$this->active]->settings['btnPrint'] ||
-            false === $this->permissions->allowExport) {
-            Tools::log()->warning('no-print-permission');
+        if (false === $this->views[$this->active]->settings['btnPrint']
+            || false === $this->permissions->allowExport) {
+            $this->toolBox()->i18nLog()->warning('no-print-permission');
             return;
         }
 
@@ -409,7 +390,7 @@ abstract class BaseController extends Controller
         $column = $this->views[$viewName]->columnForField($fieldName);
         if (!empty($column)) {
             foreach ($column->widget->values as $value) {
-                $result[] = ['key' => Tools::lang()->trans($value['title']), 'value' => $value['value']];
+                $result[] = ['key' => $this->toolBox()->i18n()->trans($value['title']), 'value' => $value['value']];
             }
         }
         return $result;
@@ -439,7 +420,6 @@ abstract class BaseController extends Controller
      */
     protected function selectAction(): array
     {
-        $required = (bool)$this->request->get('required', false);
         $data = $this->requestGet(['field', 'fieldcode', 'fieldfilter', 'fieldtitle', 'formname', 'source', 'term']);
 
         $where = [];
@@ -448,9 +428,15 @@ abstract class BaseController extends Controller
         }
 
         $results = [];
-        foreach ($this->codeModel->all($data['source'], $data['fieldcode'], $data['fieldtitle'], !$required, $where) as $value) {
-            $results[] = ['key' => Tools::fixHtml($value->code), 'value' => Tools::fixHtml($value->description)];
+        $utils = $this->toolBox()->utils();
+        foreach ($this->codeModel->all($data['source'], $data['fieldcode'], $data['fieldtitle'], false, $where) as $value) {
+            $results[] = ['key' => $utils->fixHtml($value->code), 'value' => $utils->fixHtml($value->description)];
         }
+
+        if (empty($results)) {
+            $results[] = ['key' => null, 'value' => $this->toolBox()->i18n()->trans('no-data')];
+        }
+
         return $results;
     }
 }

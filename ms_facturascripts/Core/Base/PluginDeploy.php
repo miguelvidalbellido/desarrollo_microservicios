@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FacturaScripts
- * Copyright (C) 2017-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2017-2022 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -20,8 +20,6 @@
 namespace FacturaScripts\Core\Base;
 
 use Exception;
-use FacturaScripts\Core\Tools;
-use FacturaScripts\Core\Translator as CoreTranslator;
 use SimpleXMLElement;
 
 /**
@@ -31,10 +29,15 @@ use SimpleXMLElement;
  */
 final class PluginDeploy
 {
-    /** @var array */
+
+    /**
+     * @var array
+     */
     private $enabledPlugins = [];
 
-    /** @var array */
+    /**
+     * @var array
+     */
     private $fileList = [];
 
     /**
@@ -49,7 +52,7 @@ final class PluginDeploy
     {
         $this->enabledPlugins = array_reverse($enabledPlugins);
 
-        $folders = ['Assets', 'Controller', 'Data', 'Lib', 'Model', 'Table', 'View', 'Worker', 'XMLView'];
+        $folders = ['Assets', 'Controller', 'Data', 'Lib', 'Model', 'Table', 'View', 'XMLView'];
         foreach ($folders as $folder) {
             if ($clean) {
                 ToolBox::files()::delTree(FS_FOLDER . DIRECTORY_SEPARATOR . 'Dinamic' . DIRECTORY_SEPARATOR . $folder);
@@ -71,8 +74,10 @@ final class PluginDeploy
         }
 
         // reload translations
-        CoreTranslator::deploy();
-        CoreTranslator::reload();
+        $i18n = ToolBox::i18n();
+        if (method_exists($i18n, 'reload')) {
+            $i18n::reload();
+        }
     }
 
     /**
@@ -87,11 +92,6 @@ final class PluginDeploy
         $files = ToolBox::files()::scanFolder(FS_FOLDER . DIRECTORY_SEPARATOR . 'Dinamic' . DIRECTORY_SEPARATOR . 'Controller', false);
         foreach ($files as $fileName) {
             if (substr($fileName, -4) !== '.php') {
-                continue;
-            }
-
-            // excluimos Installer y ApiRoot
-            if (in_array(substr($fileName, 0, -4), ['Installer', 'ApiRoot'])) {
                 continue;
             }
 
@@ -117,13 +117,10 @@ final class PluginDeploy
         $menuManager->reload();
 
         // checks app homepage
-        $saveSettings = false;
-        if (!in_array(Tools::settings('default', 'homepage', ''), $pageNames)) {
-            Tools::settingsSet('default', 'homepage', 'AdminPlugins');
-            $saveSettings = true;
-        }
-        if ($saveSettings) {
-            Tools::settingsSave();
+        $appSettings = ToolBox::appSettings();
+        if (!in_array($appSettings->get('default', 'homepage', ''), $pageNames)) {
+            $appSettings->set('default', 'homepage', 'AdminPlugins');
+            $appSettings->save();
         }
     }
 
@@ -238,7 +235,7 @@ final class PluginDeploy
         $className = basename($fileName, '.php');
         $txt = '<?php namespace ' . $newNamespace . ";\n\n"
             . '/**' . "\n"
-            . ' * Class created by Core/Base/PluginDeploy' . "\n"
+            . ' * Class created by Core/Base/PluginManager' . "\n"
             . ' * @author FacturaScripts <carlos@facturascripts.com>' . "\n"
             . ' */' . "\n"
             . $this->getClassType($fileName, $folder, $place, $pluginName) . ' ' . $className . ' extends \\' . $namespace . '\\' . $className;
@@ -284,10 +281,6 @@ final class PluginDeploy
 
         // Merge XML files
         $xml = simplexml_load_file($originPath);
-        if (false === $xml) {
-            return;
-        }
-
         foreach ($extensions as $extension) {
             $xmlExtension = simplexml_load_file($extension);
             $this->mergeXMLDocs($xml, $xmlExtension);

@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FacturaScripts
- * Copyright (C) 2018-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2018-2021 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -21,7 +21,6 @@ namespace FacturaScripts\Core\Lib\Accounting;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
 use FacturaScripts\Core\Model\Ejercicio;
-use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\Asiento;
 use FacturaScripts\Dinamic\Model\Cuenta;
 use FacturaScripts\Dinamic\Model\Ejercicio as DinEjercicio;
@@ -36,6 +35,7 @@ use FacturaScripts\Dinamic\Model\Subcuenta;
  */
 class AccountingClosingOpening extends AccountingClosingBase
 {
+
     /**
      * indicates whether the accounting account plan should be copied
      * to the new fiscal year.
@@ -106,9 +106,10 @@ class AccountingClosingOpening extends AccountingClosingBase
      */
     protected function getConcept(): string
     {
-        return Tools::lang()->trans('closing-opening-concept', [
-            '%exercise%' => $this->newExercise->nombre
-        ]);
+        return $this->toolBox()->i18n()->trans(
+            'closing-opening-concept',
+            ['%exercise%' => $this->newExercise->nombre]
+        );
     }
 
     /**

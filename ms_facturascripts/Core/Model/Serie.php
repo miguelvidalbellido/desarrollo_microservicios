@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FacturaScripts
- * Copyright (C) 2013-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2013-2022 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -20,9 +20,6 @@
 namespace FacturaScripts\Core\Model;
 
 use FacturaScripts\Core\DataSrc\Series;
-use FacturaScripts\Core\Model\Base\ModelClass;
-use FacturaScripts\Core\Model\Base\ModelTrait;
-use FacturaScripts\Core\Tools;
 
 /**
  * A series of invoicing or accounting, to have different numbering
@@ -30,9 +27,10 @@ use FacturaScripts\Core\Tools;
  *
  * @author Carlos García Gómez <carlos@facturascripts.com>
  */
-class Serie extends ModelClass
+class Serie extends Base\ModelClass
 {
-    use ModelTrait;
+
+    use Base\ModelTrait;
 
     /**
      * @var int
@@ -65,12 +63,6 @@ class Serie extends ModelClass
      */
     public $siniva;
 
-    /**
-     *
-     * @var string
-     */
-    public $tipo;
-
     public function clear()
     {
         parent::clear();
@@ -80,7 +72,7 @@ class Serie extends ModelClass
     public function delete(): bool
     {
         if ($this->isDefault()) {
-            Tools::log()->warning('cant-delete-default-serie');
+            $this->toolBox()->i18nLog()->warning('cant-delete-default-serie');
             return false;
         }
 
@@ -108,7 +100,7 @@ class Serie extends ModelClass
      */
     public function isDefault(): bool
     {
-        return $this->codserie === Tools::settings('default', 'codserie');
+        return $this->codserie === $this->toolBox()->appSettings()->get('default', 'codserie');
     }
 
     public static function primaryColumn(): string
@@ -136,15 +128,14 @@ class Serie extends ModelClass
     {
         $this->codserie = trim($this->codserie);
         if ($this->codserie && 1 !== preg_match('/^[A-Z0-9_\+\.\-]{1,4}$/i', $this->codserie)) {
-            Tools::log()->error(
+            $this->toolBox()->i18nLog()->error(
                 'invalid-alphanumeric-code',
                 ['%value%' => $this->codserie, '%column%' => 'codserie', '%min%' => '1', '%max%' => '4']
             );
             return false;
         }
 
-        $this->descripcion = Tools::noHtml($this->descripcion);
-
+        $this->descripcion = $this->toolBox()->utils()->noHtml($this->descripcion);
         return parent::test();
     }
 

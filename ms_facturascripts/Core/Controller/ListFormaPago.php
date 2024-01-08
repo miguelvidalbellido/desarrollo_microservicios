@@ -48,24 +48,24 @@ class ListFormaPago extends ListController
         $this->createViewsBankAccounts();
     }
 
-    protected function createViewsBankAccounts(string $viewName = 'ListCuentaBanco'): void
+    protected function createViewsBankAccounts(string $viewName = 'ListCuentaBanco')
     {
-        $this->addView($viewName, 'CuentaBanco', 'bank-accounts', 'fas fa-piggy-bank')
-            ->addSearchFields(['descripcion', 'codcuenta'])
-            ->addOrderBy(['codcuenta'], 'code')
-            ->addOrderBy(['descripcion'], 'description');
+        $this->addView($viewName, 'CuentaBanco', 'bank-accounts', 'fas fa-piggy-bank');
+        $this->addSearchFields($viewName, ['descripcion', 'codcuenta']);
+        $this->addOrderBy($viewName, ['codcuenta'], 'code');
+        $this->addOrderBy($viewName, ['descripcion'], 'description');
 
         // filters
         $this->addFilterSelect('ListCuentaBanco', 'idempresa', 'company', 'idempresa', Empresas::codeModel());
     }
 
-    protected function createViewsPaymentMethods(string $viewName = 'ListFormaPago'): void
+    protected function createViewsPaymentMethods(string $viewName = 'ListFormaPago')
     {
-        $this->addView($viewName, 'FormaPago', 'payment-methods', 'fas fa-credit-card')
-            ->addSearchFields(['descripcion', 'codpago'])
-            ->addOrderBy(['codpago', 'idempresa'], 'code')
-            ->addOrderBy(['descripcion'], 'description')
-            ->addOrderBy(['idempresa', 'codpago'], 'company');
+        $this->addView($viewName, 'FormaPago', 'payment-methods', 'fas fa-credit-card');
+        $this->addSearchFields($viewName, ['descripcion', 'codpago']);
+        $this->addOrderBy($viewName, ['codpago', 'idempresa'], 'code');
+        $this->addOrderBy($viewName, ['descripcion'], 'description');
+        $this->addOrderBy($viewName, ['idempresa', 'codpago'], 'company');
 
         // filters
         $this->addFilterSelect($viewName, 'idempresa', 'company', 'idempresa', Empresas::codeModel());

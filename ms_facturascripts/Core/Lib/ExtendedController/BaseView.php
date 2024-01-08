@@ -20,9 +20,9 @@
 namespace FacturaScripts\Core\Lib\ExtendedController;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
+use FacturaScripts\Core\Base\ToolBox;
 use FacturaScripts\Core\Lib\Widget\VisualItem;
 use FacturaScripts\Core\Model\Base\ModelClass;
-use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Lib\Widget\ColumnItem;
 use FacturaScripts\Dinamic\Lib\Widget\GroupItem;
 use FacturaScripts\Dinamic\Lib\Widget\VisualItemLoadEngine;
@@ -163,7 +163,7 @@ abstract class BaseView
         if (class_exists($modelName)) {
             $this->model = new $modelName();
         } else {
-            Tools::log()->critical('model-not-found', ['%model%' => $modelName]);
+            ToolBox::i18nLog()->critical('model-not-found', ['%model%' => $modelName]);
         }
 
         $this->icon = $icon;
@@ -184,7 +184,7 @@ abstract class BaseView
             'megasearch' => false
         ];
         $this->template = static::DEFAULT_TEMPLATE;
-        $this->title = Tools::lang()->trans($title);
+        $this->title = ToolBox::i18n()->trans($title);
         $this->assets();
     }
 
@@ -217,7 +217,7 @@ abstract class BaseView
      *
      * @param string $fieldName
      *
-     * @return ?ColumnItem
+     * @return ColumnItem
      */
     public function columnForField(string $fieldName)
     {
@@ -238,17 +238,14 @@ abstract class BaseView
      * @param string $columnName
      * @param bool $disabled
      * @param string $readOnly
-     * @return BaseView
      */
-    public function disableColumn(string $columnName, bool $disabled = true, string $readOnly = ''): BaseView
+    public function disableColumn(string $columnName, bool $disabled = true, string $readOnly = '')
     {
         $column = $this->columnForName($columnName);
         if ($column) {
             $column->display = $disabled ? 'none' : 'left';
             $column->widget->readonly = empty($readOnly) ? $column->widget->readonly : $readOnly;
         }
-
-        return $this;
     }
 
     /**
@@ -256,7 +253,7 @@ abstract class BaseView
      *
      * @return GroupItem[]
      */
-    public function getColumns(): array
+    public function getColumns()
     {
         return $this->columns;
     }
@@ -266,18 +263,21 @@ abstract class BaseView
      *
      * @return GroupItem[]
      */
-    public function getModals(): array
+    public function getModals()
     {
         return $this->modals;
     }
 
+    /**
+     * @return array
+     */
     public function getPagination(): array
     {
         $pages = [];
         $key1 = $key2 = 0;
         $current = 1;
 
-        // add all pages
+        /// add all pages
         while ($key2 < $this->count) {
             $pages[$key1] = [
                 'active' => ($key2 == $this->offset),
@@ -291,7 +291,7 @@ abstract class BaseView
             $key2 += FS_ITEM_LIMIT;
         }
 
-        // now remove pages
+        /// now descarting pages
         foreach (array_keys($pages) as $key2) {
             $middle = intval($key1 / 2);
 
@@ -346,18 +346,19 @@ abstract class BaseView
     }
 
     /**
+     *
      * @param User|false $user
      */
     public function loadPageOptions($user = false)
     {
         if (false === is_bool($user)) {
-            // sets user security level for use in render
+            /// sets user security level for use in render
             VisualItem::setLevel($user->level);
         }
 
-        $orderBy = ['nick' => 'ASC'];
+        $orderby = ['nick' => 'ASC'];
         $where = $this->getPageWhere($user);
-        if ($this->pageOption->loadFromCode('', $where, $orderBy)) {
+        if ($this->pageOption->loadFromCode('', $where, $orderby)) {
             $this->settings['customized'] = true;
         } else {
             $viewName = explode('-', $this->name)[0];
@@ -365,13 +366,6 @@ abstract class BaseView
         }
 
         VisualItemLoadEngine::loadArray($this->columns, $this->modals, $this->rows, $this->pageOption);
-    }
-
-    public function setSettings(string $key, $value): BaseView
-    {
-        $this->settings[$key] = $value;
-
-        return $this;
     }
 
     /**

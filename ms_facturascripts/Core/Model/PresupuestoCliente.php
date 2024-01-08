@@ -21,9 +21,6 @@
 namespace FacturaScripts\Core\Model;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
-use FacturaScripts\Core\Model\Base\ModelTrait;
-use FacturaScripts\Core\Model\Base\SalesDocument;
-use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\LineaPresupuestoCliente as LineaPresupuesto;
 
 /**
@@ -31,9 +28,10 @@ use FacturaScripts\Dinamic\Model\LineaPresupuestoCliente as LineaPresupuesto;
  *
  * @author Carlos García Gómez <carlos@facturascripts.com>
  */
-class PresupuestoCliente extends SalesDocument
+class PresupuestoCliente extends Base\SalesDocument
 {
-    use ModelTrait;
+
+    use Base\ModelTrait;
 
     /**
      * Date on which the validity of the estimation ends.
@@ -54,9 +52,9 @@ class PresupuestoCliente extends SalesDocument
         parent::clear();
 
         // set default expiration
-        $expirationDays = Tools::settings('default', 'finofertadays');
+        $expirationDays = $this->toolBox()->appSettings()->get('default', 'finofertadays');
         if ($expirationDays) {
-            $this->finoferta = Tools::date('+' . $expirationDays . ' days');
+            $this->finoferta = date(self::DATE_STYLE, strtotime('+' . $expirationDays . ' days'));
         }
     }
 
@@ -69,8 +67,8 @@ class PresupuestoCliente extends SalesDocument
     {
         $lineaModel = new LineaPresupuesto();
         $where = [new DataBaseWhere('idpresupuesto', $this->idpresupuesto)];
-        $orderBy = ['orden' => 'DESC', 'idlinea' => 'ASC'];
-        return $lineaModel->all($where, $orderBy, 0, 0);
+        $order = ['orden' => 'DESC', 'idlinea' => 'ASC'];
+        return $lineaModel->all($where, $order, 0, 0);
     }
 
     /**

@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FacturaScripts
- * Copyright (C) 2017-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2017-2022 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,8 +19,6 @@
 
 namespace FacturaScripts\Core\Model;
 
-use FacturaScripts\Core\Tools;
-
 /**
  * Visual filter configuration of the FacturaScripts views,
  * each PageFilter corresponds to a view or tab filter.
@@ -29,6 +27,7 @@ use FacturaScripts\Core\Tools;
  */
 class PageFilter extends Base\ModelClass
 {
+
     use Base\ModelTrait;
 
     /**
@@ -106,9 +105,9 @@ class PageFilter extends Base\ModelClass
 
     public function test(): bool
     {
-        $this->description = Tools::noHtml($this->description);
+        $this->description = $this->toolBox()->utils()->noHtml($this->description);
         if (empty($this->description)) {
-            Tools::log()->warning('description-error');
+            $this->toolBox()->i18nLog()->warning('description-error');
             return false;
         }
 

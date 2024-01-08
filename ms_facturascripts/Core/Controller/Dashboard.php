@@ -25,8 +25,8 @@ use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
 use FacturaScripts\Core\Cache;
 use FacturaScripts\Core\Http;
 use FacturaScripts\Core\Model\Base\BusinessDocument;
+use FacturaScripts\Core\Model\Base\ModelCore;
 use FacturaScripts\Core\Plugins;
-use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\AlbaranCliente;
 use FacturaScripts\Dinamic\Model\Cliente;
 use FacturaScripts\Dinamic\Model\Contacto;
@@ -88,9 +88,7 @@ class Dashboard extends Controller
     public function privateCore(&$response, $user, $permissions)
     {
         parent::privateCore($response, $user, $permissions);
-
-        $this->title = Tools::lang()->trans('dashboard-for', ['%company%' => $this->empresa->nombrecorto]);
-
+        $this->title = $this->toolBox()->i18n()->trans('dashboard-for', ['%company%' => $this->empresa->nombrecorto]);
         $this->loadExtensions();
     }
 
@@ -98,7 +96,6 @@ class Dashboard extends Controller
     {
         // comprobamos si estamos el localhost
         if ($_SERVER['REMOTE_ADDR'] == 'localhost' ||
-            $_SERVER['REMOTE_ADDR'] == '::1' ||
             substr($_SERVER['REMOTE_ADDR'], 0, 4) == '192.' ||
             substr($_SERVER['REMOTE_ADDR'], 0, 4) == '172.') {
             // si el plugin Backup está activo, devolvemos false
@@ -146,7 +143,7 @@ class Dashboard extends Controller
      * Set the quick links for data creation.
      * Example: createLinks['EditControllerName'] = 'label'
      */
-    private function loadCreateLinks(): void
+    private function loadCreateLinks()
     {
         $this->createLinks['EditProducto'] = 'product';
         $this->createLinks['EditCliente'] = 'customer';
@@ -162,7 +159,7 @@ class Dashboard extends Controller
     /**
      * Establish the sections to be displayed on the dashboard.
      */
-    private function loadExtensions(): void
+    private function loadExtensions()
     {
         $this->loadCreateLinks();
         $this->loadOpenLinks();
@@ -177,7 +174,7 @@ class Dashboard extends Controller
     /**
      * Load the data regarding the stock under minimum.
      */
-    private function loadLowStockSection(): void
+    private function loadLowStockSection()
     {
         if (false === $this->dataBase->tableExists('stocks')) {
             return;
@@ -198,11 +195,11 @@ class Dashboard extends Controller
     /**
      * Load last news from facturascripts.com
      */
-    private function loadNews(): void
+    private function loadNews()
     {
         // buscamos en la caché
         $news = Cache::get('dashboard-news');
-        if ($news !== null) {
+        if($news !== null) {
             $this->news = $news;
             return;
         }
@@ -219,7 +216,7 @@ class Dashboard extends Controller
     /**
      * Loads the links to the latest data created by the user.
      */
-    private function loadOpenLinks(): void
+    private function loadOpenLinks()
     {
         $this->setOpenLinksForDocument(new FacturaCliente(), 'invoice');
         $this->setOpenLinksForDocument(new AlbaranCliente(), 'delivery-note');
@@ -268,12 +265,12 @@ class Dashboard extends Controller
     /**
      * Load the receipts pending collection.
      */
-    private function loadReceiptSection(): void
+    private function loadReceiptSection()
     {
         $receiptModel = new ReciboCliente();
         $where = [
             new DataBaseWhere('pagado', false),
-            new DataBaseWhere('vencimiento', Tools::date(), '<'),
+            new DataBaseWhere('vencimiento', $this->toolBox()->today(), '<'),
             new DataBaseWhere('vencimiento', date('Y-m-d', strtotime('-1 year')), '>')
         ];
         $this->receipts = $receiptModel->all($where, ['vencimiento' => 'DESC']);
@@ -286,7 +283,7 @@ class Dashboard extends Controller
     /**
      * Load statistical data.
      */
-    private function loadStats(): void
+    private function loadStats()
     {
         $totalModel = new TotalModel();
 
@@ -326,9 +323,9 @@ class Dashboard extends Controller
      * @param BusinessDocument $model
      * @param string $label
      */
-    private function setOpenLinksForDocument($model, $label): void
+    private function setOpenLinksForDocument($model, $label)
     {
-        $minDate = Tools::date('-2 days');
+        $minDate = date(ModelCore::DATE_STYLE, strtotime('-2 days'));
         $where = [
             new DataBaseWhere('fecha', $minDate, '>='),
             new DataBaseWhere('nick', $this->user->nick)

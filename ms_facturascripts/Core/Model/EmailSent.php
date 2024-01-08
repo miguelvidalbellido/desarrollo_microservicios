@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FacturaScripts
- * Copyright (C) 2019-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2022 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -20,11 +20,6 @@
 namespace FacturaScripts\Core\Model;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
-use FacturaScripts\Core\Base\MyFilesToken;
-use FacturaScripts\Core\Model\Base\ModelClass;
-use FacturaScripts\Core\Model\Base\ModelTrait;
-use FacturaScripts\Core\Tools;
-use FacturaScripts\Dinamic\Lib\Email\NewMail;
 
 /**
  * Model EmailSent
@@ -32,77 +27,68 @@ use FacturaScripts\Dinamic\Lib\Email\NewMail;
  * @author Raul Jimenez         <raljopa@gmail.com>
  * @author Carlos García Gómez  <carlos@facturascripts.com>
  */
-class EmailSent extends ModelClass
+class EmailSent extends Base\ModelClass
 {
-    use ModelTrait;
 
-    /** @var string */
+    use Base\ModelTrait;
+
+    /**
+     * Email addressee
+     *
+     * @var string
+     */
     public $addressee;
 
-    /** @var bool */
-    public $attachment;
-
-    /** @var string */
+    /**
+     * Text of email
+     *
+     * @var string
+     */
     public $body;
 
-    /** @var string */
+    /**
+     * Date and time of send
+     *
+     * @var string
+     */
     public $date;
 
-    /** @var string */
-    public $email_from;
-
-    /** @var string */
-    public $html;
-
-    /** @var string */
+    /**
+     * Primary key.
+     *
+     * @var string
+     */
     public $id;
 
-    /** @var string */
+    /**
+     * User than sent email
+     *
+     * @var string
+     */
     public $nick;
 
-    /** @var bool */
+    /**
+     * @var bool
+     */
     public $opened;
 
-    /** @var string */
+    /**
+     * Subject of email
+     *
+     * @var string
+     */
     public $subject;
 
-    /** @var string */
-    public $uuid;
-
-    /** @var string */
+    /**
+     * @var string
+     */
     public $verificode;
 
     public function clear()
     {
         parent::clear();
-        $this->date = Tools::dateTime();
+        $this->date = date(self::DATETIME_STYLE);
         $this->opened = false;
-    }
-
-    public function getAttachments(): array
-    {
-        // leemos la carpeta de adjuntos
-        $folderPath = NewMail::getAttachmentPath($this->email_from, 'Sent') . $this->uuid;
-        if (false === is_dir(FS_FOLDER . '/' . $folderPath)) {
-            return [];
-        }
-
-        // devolvemos los archivos
-        $files = [];
-        foreach (scandir(FS_FOLDER . '/' . $folderPath) as $file) {
-            if ('.' === $file || '..' === $file) {
-                continue;
-            }
-
-            $filePath = $folderPath . '/' . $file;
-            $files[] = [
-                'name' => $file,
-                'size' => filesize($filePath),
-                'path' => $filePath . '?myft=' . MyFilesToken::get($filePath, false),
-            ];
-        }
-
-        return $files;
     }
 
     public static function primaryColumn(): string
@@ -117,12 +103,10 @@ class EmailSent extends ModelClass
 
     public function test(): bool
     {
-        $body = Tools::noHtml($this->body);
+        $utils = $this->toolBox()->utils();
+        $body = $utils->noHtml($this->body);
         $this->body = strlen($body) > 5000 ? substr($body, 0, 4997) . '...' : $body;
-
-        $this->html = Tools::noHtml($this->html);
-        $this->subject = Tools::noHtml($this->subject);
-
+        $this->subject = $utils->noHtml($this->subject);
         return parent::test();
     }
 
@@ -133,6 +117,8 @@ class EmailSent extends ModelClass
 
     public static function verify(string $verificode, string $addressee = ''): bool
     {
+        $found = false;
+
         $model = new static();
         $where = [new DataBaseWhere('verificode', $verificode)];
         if (!empty($addressee)) {
@@ -143,9 +129,9 @@ class EmailSent extends ModelClass
             $item->opened = true;
             $item->save();
 
-            return true;
+            $found = true;
         }
 
-        return false;
+        return $found;
     }
 }

@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FacturaScripts
- * Copyright (C) 2013-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2013-2022 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -16,20 +16,19 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
 namespace FacturaScripts\Core\Base\DataBase;
 
 use Exception;
-use FacturaScripts\Core\KernelException;
 
 /**
  * Class to connect with PostgreSQL.
  *
- * @author Carlos García Gómez           <carlos@facturascripts.com>
+ * @author Carlos García Gómez  <carlos@facturascripts.com>
  * @author Jose Antonio Cuello Principal <yopli2000@gmail.com>
  */
 class PostgresqlEngine extends DataBaseEngine
 {
+
     /**
      * Link to the SQL statements for the connected database
      *
@@ -56,11 +55,6 @@ class PostgresqlEngine extends DataBaseEngine
     public function beginTransaction($link)
     {
         return $this->exec($link, 'BEGIN TRANSACTION;');
-    }
-
-    public function castInteger($link, $column)
-    {
-        return 'CAST(' . $this->escapeColumn($link, $column) . ' AS unsigned)';
     }
 
     /**
@@ -116,7 +110,7 @@ class PostgresqlEngine extends DataBaseEngine
     {
         if (!function_exists('pg_connect')) {
             $error = $this->i18n->trans('php-postgresql-not-found');
-            throw new KernelException('DatabaseError', $error);
+            return null;
         }
 
         $string = 'host=' . \FS_DB_HOST . ' dbname=' . \FS_DB_NAME . ' port=' . \FS_DB_PORT
@@ -124,7 +118,7 @@ class PostgresqlEngine extends DataBaseEngine
         $result = pg_connect($string);
         if (!$result) {
             $error = pg_last_error();
-            throw new KernelException('DatabaseError', $error);
+            return null;
         }
 
         /// set datestyle
@@ -149,7 +143,7 @@ class PostgresqlEngine extends DataBaseEngine
      * Escapes the column name.
      *
      * @param resource $link
-     * @param string $name
+     * @param string   $name
      *
      * @return string
      */
@@ -162,7 +156,7 @@ class PostgresqlEngine extends DataBaseEngine
      * Escapes quotes from a text string
      *
      * @param resource $link
-     * @param string $str
+     * @param string   $str
      *
      * @return string
      */
@@ -176,7 +170,7 @@ class PostgresqlEngine extends DataBaseEngine
      * (inserts, updates or deletes)
      *
      * @param resource $link
-     * @param string $sql
+     * @param string   $sql
      *
      * @return bool
      */
@@ -269,7 +263,7 @@ class PostgresqlEngine extends DataBaseEngine
      * Runs a SELECT SQL statement
      *
      * @param resource $link
-     * @param string $sql
+     * @param string   $sql
      *
      * @return array
      */
@@ -282,8 +276,8 @@ class PostgresqlEngine extends DataBaseEngine
     /**
      *
      * @param resource $link
-     * @param string $tableName
-     * @param array $fields
+     * @param string   $tableName
+     * @param array    $fields
      */
     public function updateSequence($link, $tableName, $fields)
     {
@@ -313,8 +307,8 @@ class PostgresqlEngine extends DataBaseEngine
      * or an empty array if it fails.
      *
      * @param resource $link
-     * @param string $sql
-     * @param bool $selectRows
+     * @param string   $sql
+     * @param bool     $selectRows
      *
      * @return array|bool
      */

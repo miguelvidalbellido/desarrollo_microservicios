@@ -23,7 +23,6 @@ use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
 use FacturaScripts\Core\DataSrc\Ejercicios;
 use FacturaScripts\Core\Lib\ExtendedController\BaseView;
 use FacturaScripts\Core\Lib\ExtendedController\EditController;
-use FacturaScripts\Core\Tools;
 
 /**
  * Controller to edit a single item from the Serie model
@@ -60,8 +59,7 @@ class EditSerie extends EditController
     protected function createSequenceView(string $viewName = 'ListSecuenciaDocumento')
     {
         $this->addListView($viewName, 'SecuenciaDocumento', 'sequences', 'fas fa-code');
-        $this->views[$viewName]->addOrderBy(['codejercicio', 'tipodoc'], 'exercise');
-        $this->views[$viewName]->addOrderBy(['tipodoc', 'codejercicio'], 'doc-type', 1);
+        $this->views[$viewName]->addOrderBy(['codejercicio', 'tipodoc'], 'exercise', 2);
         $this->views[$viewName]->addSearchFields(['patron', 'tipodoc']);
 
         // desactivamos la columna serie
@@ -74,9 +72,9 @@ class EditSerie extends EditController
 
         // filtros
         $types = $this->codeModel->all('estados_documentos', 'tipodoc', 'tipodoc');
-        foreach ($types as $value) {
+        foreach ($types as $key => $value) {
             if (!empty($value->code)) {
-                $value->description = Tools::lang()->trans($value->code);
+                $value->description = $this->toolBox()->i18n()->trans($value->code);
             }
         }
         $this->views[$viewName]->addFilterSelect('tipodoc', 'doc-type', 'tipodoc', $types);

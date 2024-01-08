@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FacturaScripts
- * Copyright (C) 2018-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2018-2022 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -22,7 +22,7 @@ namespace FacturaScripts\Core\Controller;
 use FacturaScripts\Core\Base\Controller;
 use FacturaScripts\Core\Base\ControllerPermissions;
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
-use FacturaScripts\Core\Tools;
+use FacturaScripts\Core\Model\Base\ModelCore;
 use FacturaScripts\Dinamic\Lib\Email\NewMail;
 use FacturaScripts\Dinamic\Model\Cliente;
 use FacturaScripts\Dinamic\Model\CodeModel;
@@ -73,15 +73,13 @@ class SendMail extends Controller
     public function privateCore(&$response, $user, $permissions)
     {
         parent::privateCore($response, $user, $permissions);
-
         $this->codeModel = new CodeModel();
-
-        $this->newMail = NewMail::create()
-            ->setUser($this->user);
+        $this->newMail = new NewMail();
+        $this->newMail->setUser($this->user);
 
         // Check if the email is configurate
         if (false === $this->newMail->canSendMail()) {
-            Tools::log()->warning('email-not-configured');
+            $this->toolBox()->i18nLog()->warning('email-not-configured');
         }
 
         $action = $this->request->get('action', '');
@@ -103,9 +101,6 @@ class SendMail extends Controller
         if ($this->request->get('modelClassName') && $this->request->get('modelCode')) {
             $sendParams['modelClassName'] = $this->request->get('modelClassName');
             $sendParams['modelCode'] = $this->request->get('modelCode');
-            if ($this->request->get('modelCodes')) {
-                $sendParams['modelCodes'] = urldecode($this->request->get('modelCodes'));
-            }
         }
 
         return parent::url() . '?' . http_build_query($sendParams);
@@ -129,7 +124,7 @@ class SendMail extends Controller
         return $results;
     }
 
-    protected function checkInvoices(): void
+    protected function checkInvoices()
     {
         if ($this->request->query->get('modelClassName') != 'FacturaCliente') {
             return;
@@ -137,7 +132,7 @@ class SendMail extends Controller
 
         $invoice = new FacturaCliente();
         if ($invoice->loadFromCode($this->request->query->getAlnum('modelCode')) && $invoice->editable) {
-            Tools::log()->warning('sketch-invoice-warning');
+            self::toolBox()::i18nLog()->warning('sketch-invoice-warning');
         }
     }
 
@@ -147,7 +142,7 @@ class SendMail extends Controller
      * @param string $action
      * @throws Exception
      */
-    protected function execAction(string $action): void
+    protected function execAction(string $action)
     {
         switch ($action) {
             case 'autocomplete':
@@ -162,12 +157,12 @@ class SendMail extends Controller
                     break;
                 }
                 if ($this->send()) {
-                    Tools::log()->notice('send-mail-ok');
+                    $this->toolBox()->i18nLog()->notice('send-mail-ok');
                     $this->updateFemail();
                     $this->redirAfter();
                     break;
                 }
-                Tools::log()->error('send-mail-error');
+                $this->toolBox()->i18nLog()->error('send-mail-error');
                 break;
 
             default:
@@ -184,7 +179,7 @@ class SendMail extends Controller
         return NewMail::splitEmails($this->request->request->get($field, ''));
     }
 
-    protected function loadDataDefault($model): void
+    protected function loadDataDefault($model)
     {
         // buscamos el texto de la notificación para usar el asunto y el cuerpo
         $notificationModel = new EmailNotification();
@@ -203,40 +198,38 @@ class SendMail extends Controller
         // si no hay notificación, usamos los datos de las traducciones
         switch ($model->modelClassName()) {
             case 'AlbaranCliente':
-                $this->newMail->title = Tools::lang()->trans('delivery-note-email-subject', ['%code%' => $model->codigo]);
-                $this->newMail->text = Tools::lang()->trans('delivery-note-email-text', ['%code%' => $model->codigo]);
+                $this->newMail->title = $this->toolBox()->i18n()->trans('delivery-note-email-subject', ['%code%' => $model->codigo]);
+                $this->newMail->text = $this->toolBox()->i18n()->trans('delivery-note-email-text', ['%code%' => $model->codigo]);
                 break;
 
             case 'FacturaCliente':
-                $this->newMail->title = Tools::lang()->trans('invoice-email-subject', ['%code%' => $model->codigo]);
-                $this->newMail->text = Tools::lang()->trans('invoice-email-text', ['%code%' => $model->codigo]);
+                $this->newMail->title = $this->toolBox()->i18n()->trans('invoice-email-subject', ['%code%' => $model->codigo]);
+                $this->newMail->text = $this->toolBox()->i18n()->trans('invoice-email-text', ['%code%' => $model->codigo]);
                 break;
 
             case 'PedidoCliente':
-                $this->newMail->title = Tools::lang()->trans('order-email-subject', ['%code%' => $model->codigo]);
-                $this->newMail->text = Tools::lang()->trans('order-email-text', ['%code%' => $model->codigo]);
+                $this->newMail->title = $this->toolBox()->i18n()->trans('order-email-subject', ['%code%' => $model->codigo]);
+                $this->newMail->text = $this->toolBox()->i18n()->trans('order-email-text', ['%code%' => $model->codigo]);
                 break;
 
             case 'PresupuestoCliente':
-                $this->newMail->title = Tools::lang()->trans('estimation-email-subject', ['%code%' => $model->codigo]);
-                $this->newMail->text = Tools::lang()->trans('estimation-email-text', ['%code%' => $model->codigo]);
+                $this->newMail->title = $this->toolBox()->i18n()->trans('estimation-email-subject', ['%code%' => $model->codigo]);
+                $this->newMail->text = $this->toolBox()->i18n()->trans('estimation-email-text', ['%code%' => $model->codigo]);
                 break;
         }
     }
 
-    protected function redirAfter(): void
+    protected function redirAfter()
     {
         $className = self::MODEL_NAMESPACE . $this->request->get('modelClassName');
         if (false === class_exists($className)) {
-            Tools::log()->notice('reloading');
-            $this->redirect('SendMail', 3);
             return;
         }
 
         $model = new $className();
         $modelCode = $this->request->get('modelCode');
         if ($model->loadFromCode($modelCode) && property_exists($className, 'femail')) {
-            Tools::log()->notice('reloading');
+            $this->toolBox()->i18nLog()->notice('reloading');
             $this->redirect($model->url(), 3);
         }
     }
@@ -244,7 +237,7 @@ class SendMail extends Controller
     /**
      * Remove old files.
      */
-    protected function removeOld(): void
+    protected function removeOld()
     {
         foreach (glob(FS_FOLDER . '/MyFiles/*_mail_*.pdf') as $fileName) {
             $parts = explode('_', $fileName);
@@ -281,7 +274,7 @@ class SendMail extends Controller
     protected function send(): bool
     {
         if ($this->newMail->fromEmail != $this->user->email && $this->request->request->get('replyto', '0')) {
-            $this->newMail->replyTo($this->user->email, $this->user->nick);
+            $this->newMail->addReplyTo($this->user->email, $this->user->nick);
         }
 
         $this->newMail->title = $this->request->request->get('subject', '');
@@ -289,50 +282,46 @@ class SendMail extends Controller
         $this->newMail->setMailbox($this->request->request->get('email-from', ''));
 
         foreach ($this->getEmails('email') as $email) {
-            $this->newMail->to($email);
+            $this->newMail->addAddress($email);
         }
         foreach ($this->getEmails('email-cc') as $email) {
-            $this->newMail->cc($email);
+            $this->newMail->addCC($email);
         }
         foreach ($this->getEmails('email-bcc') as $email) {
-            $this->newMail->bcc($email);
+            $this->newMail->addBCC($email);
         }
 
         $this->setAttachment();
+        foreach ($this->request->files->get('uploads', []) as $file) {
+            $this->newMail->addAttachment($file->getPathname(), $file->getClientOriginalName());
+        }
 
-        return $this->newMail->send();
+        if ($this->newMail->send()) {
+            $fileName = $this->request->get('fileName', '');
+            if (file_exists(FS_FOLDER . '/MyFiles/' . $fileName)) {
+                unlink(FS_FOLDER . '/MyFiles/' . $fileName);
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     /**
      * @throws Exception
      */
-    protected function setAttachment(): void
+    protected function setAttachment()
     {
         $fileName = $this->request->get('fileName', '');
-        Tools::folderCheckOrCreate(NewMail::ATTACHMENTS_TMP_PATH);
-        $this->newMail->addAttachment(FS_FOLDER . '/' . NewMail::ATTACHMENTS_TMP_PATH . $fileName, $fileName);
-
-        foreach ($this->request->files->get('uploads', []) as $file) {
-            // guardamos el adjunto en una carpeta temporal
-            if ($file->move(NewMail::ATTACHMENTS_TMP_PATH, $file->getClientOriginalName())) {
-                // añadimos el adjunto al email
-                $filePath = FS_FOLDER . '/' . NewMail::ATTACHMENTS_TMP_PATH . $file->getClientOriginalName();
-                $this->newMail->addAttachment($filePath, $file->getClientOriginalName());
-            }
-        }
+        $this->newMail->addAttachment(FS_FOLDER . '/MyFiles/' . $fileName, $fileName);
     }
 
     /**
      * @throws Exception
      */
-    protected function setEmailAddress(): void
+    protected function setEmailAddress()
     {
-        $email = $this->request->get('email', '');
-        if (!empty($email)) {
-            $this->newMail->to($email);
-            return;
-        }
-
         $className = self::MODEL_NAMESPACE . $this->request->get('modelClassName', '');
         if (false === class_exists($className)) {
             return;
@@ -343,65 +332,56 @@ class SendMail extends Controller
         $this->loadDataDefault($model);
 
         if (property_exists($model, 'email')) {
-            $this->newMail->to($model->email);
+            $this->newMail->addAddress($model->email);
             return;
         }
 
         $proveedor = new Proveedor();
         if (property_exists($model, 'codproveedor') && $proveedor->loadFromCode($model->codproveedor) && $proveedor->email) {
-            $this->newMail->to($proveedor->email, $proveedor->razonsocial);
+            $this->newMail->addAddress($proveedor->email, $proveedor->razonsocial);
             return;
         }
 
         $contact = new Contacto();
         if (property_exists($model, 'idcontactofact') && $contact->loadFromCode($model->idcontactofact) && $contact->email) {
-            $this->newMail->to($contact->email, $contact->fullName());
+            $this->newMail->addAddress($contact->email, $contact->fullName());
             return;
         }
 
         $cliente = new Cliente();
         if (property_exists($model, 'codcliente') && $cliente->loadFromCode($model->codcliente) && $cliente->email) {
-            $this->newMail->to($cliente->email, $cliente->razonsocial);
+            $this->newMail->addAddress($cliente->email, $cliente->razonsocial);
         }
     }
 
     /**
      * Update the property femail with actual date if exist param ModelClassName and ModelCode.
      */
-    protected function updateFemail(): void
+    protected function updateFemail()
     {
         $className = self::MODEL_NAMESPACE . $this->request->get('modelClassName');
         if (false === class_exists($className)) {
             return;
         }
 
-        // marcamos la fecha del envío del email
         $model = new $className();
         $modelCode = $this->request->get('modelCode');
         if ($model->loadFromCode($modelCode) && property_exists($className, 'femail')) {
-            $model->femail = Tools::date();
+            $model->femail = date(ModelCore::DATE_STYLE);
             if (false === $model->save()) {
-                Tools::log()->error('record-save-error');
+                $this->toolBox()->i18nLog()->error('record-save-error');
                 return;
             }
 
-            // si el sujeto no tiene email, le asignamos el del destinatario
             $subject = $model->getSubject();
-            if (empty($subject->email)) {
-                foreach ($this->newMail->getToAddresses() as $email) {
-                    $subject->email = $email;
-                    $subject->save();
-                    break;
-                }
+            if (!empty($subject->email)) {
+                return;
             }
-        }
 
-        // si hay más documentos, marcamos también la fecha de envío
-        $modelCodes = $this->request->get('modelCodes', '');
-        foreach (explode(',', $modelCodes) as $modelCode) {
-            if ($model->loadFromCode($modelCode) && property_exists($className, 'femail')) {
-                $model->femail = Tools::date();
-                $model->save();
+            foreach ($this->newMail->getToAddresses() as $email) {
+                $subject->email = $email;
+                $subject->save();
+                return;
             }
         }
     }

@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FacturaScripts
- * Copyright (C) 2013-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2013-2022 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -24,11 +24,12 @@ use FacturaScripts\Core\Base\DataBase;
 /**
  * Structure that defines a WHERE condition to filter the model data
  *
- * @author Carlos García Gómez           <carlos@facturascripts.com>
+ * @author Carlos García Gómez  <carlos@facturascripts.com>
  * @author Jose Antonio Cuello Principal <yopli2000@gmail.com>
  */
 class DataBaseWhere
 {
+
     /**
      * Link with the active database.
      *
@@ -41,28 +42,28 @@ class DataBaseWhere
      *
      * @var string
      */
-    public $fields;
+    private $fields;
 
     /**
      * Logic operator that will be applied to the condition.
      *
      * @var string
      */
-    public $operation;
+    private $operation;
 
     /**
      * Arithmetic operator that is being used.
      *
      * @var string
      */
-    public $operator;
+    private $operator;
 
     /**
      * Filter value.
      *
      * @var mixed
      */
-    public $value;
+    private $value;
 
     /**
      * DataBaseWhere constructor.
@@ -72,7 +73,7 @@ class DataBaseWhere
      * @param string $operator
      * @param string $operation
      */
-    public function __construct(string $fields, $value, string $operator = '=', string $operation = 'AND')
+    public function __construct($fields, $value, $operator = '=', $operation = 'AND')
     {
         $this->dataBase = new DataBase();
         $this->fields = $fields;
@@ -98,7 +99,7 @@ class DataBaseWhere
      *
      * @return array
      */
-    public static function applyOperation(string $fields): array
+    public static function applyOperation(string $fields)
     {
         if (empty($fields)) {
             return [];
@@ -127,7 +128,7 @@ class DataBaseWhere
      *
      * @return array
      */
-    public static function getFieldsFilter(array $whereItems): array
+    public static function getFieldsFilter(array $whereItems)
     {
         $result = [];
         foreach ($whereItems as $item) {
@@ -152,7 +153,7 @@ class DataBaseWhere
      *
      * @return string
      */
-    public function getSQLWhereItem(bool $applyOperation = false, string $prefix = ''): string
+    public function getSQLWhereItem($applyOperation = false, $prefix = ''): string
     {
         $fields = explode('|', $this->fields);
         $result = $this->applyValueToFields($this->value, $fields);
@@ -179,7 +180,7 @@ class DataBaseWhere
      *
      * @return string
      */
-    public static function getSQLWhere(array $whereItems): string
+    public static function getSQLWhere($whereItems): string
     {
         $result = '';
         $join = false;
@@ -223,7 +224,7 @@ class DataBaseWhere
      *
      * @return string
      */
-    private function applyValueToFields($value, array $fields): string
+    private function applyValueToFields($value, $fields): string
     {
         $result = '';
         foreach ($fields as $field) {
@@ -256,11 +257,12 @@ class DataBaseWhere
     }
 
     /**
+     *
      * @param string $column
      *
      * @return string
      */
-    private function escapeColumn(string $column): string
+    private function escapeColumn($column)
     {
         $exclude = ['.', 'CAST('];
         foreach ($exclude as $char) {
@@ -281,9 +283,9 @@ class DataBaseWhere
      *
      * @return string
      */
-    private static function getGroupPrefix(DataBaseWhere $item, bool &$group): string
+    private static function getGroupPrefix(&$item, &$group): string
     {
-        if ($item->operation == 'OR' && $group === false) {
+        if ($item->operation == 'OR' && $group == false) {
             $group = true;
             return '(';
         }

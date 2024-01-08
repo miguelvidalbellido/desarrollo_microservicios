@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FacturaScripts
- * Copyright (C) 2017-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2017-2021 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -16,11 +16,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
 namespace FacturaScripts\Core\Base;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
-use FacturaScripts\Core\Translator as CoreTranslator;
 use FacturaScripts\Dinamic\Lib\MenuItem;
 use FacturaScripts\Dinamic\Model\Page;
 use FacturaScripts\Dinamic\Model\RoleAccess;
@@ -114,7 +112,7 @@ class MenuManager
     public function removeOld($currentPageNames)
     {
         foreach (self::$pageModel->all([], [], 0, 0) as $page) {
-            if (false === in_array($page->name, $currentPageNames, true)) {
+            if (false === \in_array($page->name, $currentPageNames, true)) {
                 $page->delete();
             }
         }
@@ -128,10 +126,6 @@ class MenuManager
      */
     public function selectPage($pageData)
     {
-        if (empty($pageData)) {
-            return;
-        }
-
         $pageModel = new Page();
         if (false === $pageModel->loadFromCode($pageData['name'])) {
             $pageData['ordernum'] = 100;
@@ -156,7 +150,6 @@ class MenuManager
     public function setUser($user)
     {
         self::$user = $user;
-        self::$menu = null;
         $this->init();
     }
 
@@ -230,16 +223,16 @@ class MenuManager
         $menuValue = null;
         $submenuValue = null;
         $menuItem = null;
-        $i18n = new CoreTranslator();
+        $i18n = new Translator();
 
-        // We load the list of pages for the user
+        /// We load the list of pages for the user
         $pages = $this->loadPages();
         foreach ($pages as $page) {
             if (empty($page->menu)) {
                 continue;
             }
 
-            // Menu break control
+            /// Menu break control
             if ($menuValue !== $page->menu) {
                 $menuValue = $page->menu;
                 $submenuValue = null;
@@ -247,7 +240,7 @@ class MenuManager
                 $menuItem = &$result[$menuValue]->menu;
             }
 
-            // Submenu break control
+            /// Submenu break control
             if ($submenuValue !== $page->submenu) {
                 $submenuValue = $page->submenu;
                 $menuItem = &$result[$menuValue]->menu;
@@ -265,7 +258,7 @@ class MenuManager
     /**
      * Returns if the page should be saved.
      *
-     * @param Page $pageModel
+     * @param Page  $pageModel
      * @param array $pageData
      *
      * @return bool
@@ -299,7 +292,7 @@ class MenuManager
      * Assign active menu item.
      *
      * @param MenuItem[] $menu
-     * @param Page $pageModel
+     * @param Page       $pageModel
      */
     private function setActiveMenuItem(&$menu, $pageModel)
     {
@@ -323,14 +316,14 @@ class MenuManager
      *
      * @return array
      */
-    private function sortMenu(array &$result): array
+    private function sortMenu(&$result)
     {
-        // sort this menu
-        uasort($result, function ($menu1, $menu2) {
-            return strcasecmp($menu1->title, $menu2->title);
+        /// sort this menu
+        \uasort($result, function ($menu1, $menu2) {
+            return \strcasecmp($menu1->title, $menu2->title);
         });
 
-        // sort submenus
+        /// sort submenus
         foreach ($result as $key => $value) {
             if (!empty($value->menu)) {
                 $result[$key]->menu = $this->sortMenu($value->menu);

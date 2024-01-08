@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FacturaScripts
- * Copyright (C) 2015-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2015-2022 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -21,7 +21,6 @@ namespace FacturaScripts\Core\Model;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
 use FacturaScripts\Core\DataSrc\Retenciones;
-use FacturaScripts\Core\Tools;
 
 /**
  * Class to manage the data of retenciones table
@@ -32,6 +31,7 @@ use FacturaScripts\Core\Tools;
  */
 class Retencion extends Base\ModelClass
 {
+
     use Base\ModelTrait;
 
     /**
@@ -114,7 +114,7 @@ class Retencion extends Base\ModelClass
     {
         $this->codretencion = trim($this->codretencion);
         if ($this->codretencion && 1 !== preg_match('/^[A-Z0-9_\+\.\-]{1,10}$/i', $this->codretencion)) {
-            Tools::log()->error(
+            $this->toolBox()->i18nLog()->error(
                 'invalid-alphanumeric-code',
                 ['%value%' => $this->codretencion, '%column%' => 'codretencion', '%min%' => '1', '%max%' => '10']
             );
@@ -123,10 +123,10 @@ class Retencion extends Base\ModelClass
 
         $this->codsubcuentaret = empty($this->codsubcuentaret) ? null : $this->codsubcuentaret;
         $this->codsubcuentaacr = empty($this->codsubcuentaacr) ? null : $this->codsubcuentaacr;
-        $this->descripcion = Tools::noHtml($this->descripcion);
+        $this->descripcion = $this->toolBox()->utils()->noHtml($this->descripcion);
 
         if (empty($this->porcentaje) || intval($this->porcentaje) < 1) {
-            Tools::log()->warning('not-valid-percentage-retention');
+            $this->toolBox()->i18nLog()->warning('not-valid-percentage-retention');
             return false;
         }
 

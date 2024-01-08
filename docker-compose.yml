@@ -31,7 +31,7 @@ services:
     ports:
       - 8081:80
     volumes:
-      - ./ms_facturascripts:/var/www/html
+      - ./ms_facturascripts1:/var/www/html
 
   adminer:
     image: adminer

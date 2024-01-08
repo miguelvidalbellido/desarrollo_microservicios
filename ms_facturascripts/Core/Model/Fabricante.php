@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FacturaScripts
- * Copyright (C) 2013-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2013-2022 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,8 +19,6 @@
 
 namespace FacturaScripts\Core\Model;
 
-use FacturaScripts\Core\Tools;
-
 /**
  * A manufacturer of products.
  *
@@ -29,6 +27,7 @@ use FacturaScripts\Core\Tools;
  */
 class Fabricante extends Base\ModelClass
 {
+
     use Base\ModelTrait;
 
     /**
@@ -70,11 +69,12 @@ class Fabricante extends Base\ModelClass
 
     public function test(): bool
     {
-        $this->codfabricante = Tools::noHtml($this->codfabricante);
-        $this->nombre = Tools::noHtml($this->nombre);
+        $utils = $this->toolBox()->utils();
+        $this->codfabricante = $utils->noHtml($this->codfabricante);
+        $this->nombre = $utils->noHtml($this->nombre);
 
         if ($this->codfabricante && 1 !== preg_match('/^[A-Z0-9_\+\.\-]{1,8}$/i', $this->codfabricante)) {
-            Tools::log()->error(
+            $this->toolBox()->i18nLog()->error(
                 'invalid-alphanumeric-code',
                 ['%value%' => $this->codfabricante, '%column%' => 'codfabricante', '%min%' => '1', '%max%' => '8']
             );
@@ -82,7 +82,7 @@ class Fabricante extends Base\ModelClass
         }
 
         if (empty($this->nombre) || strlen($this->nombre) > 100) {
-            Tools::log()->warning(
+            $this->toolBox()->i18nLog()->warning(
                 'invalid-column-lenght',
                 ['%column%' => 'nombre', '%min%' => '1', '%max%' => '100']
             );

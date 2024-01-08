@@ -24,7 +24,6 @@ use FacturaScripts\Core\Base\ControllerPermissions;
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
 use FacturaScripts\Core\Model\Base\BusinessDocumentLine;
 use FacturaScripts\Core\Model\Base\TransformerDocument;
-use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Lib\BusinessDocumentGenerator;
 use FacturaScripts\Dinamic\Model\CodeModel;
 use FacturaScripts\Dinamic\Model\EstadoDocumento;
@@ -73,7 +72,7 @@ class DocumentStitcher extends Controller
         $data['menu'] = 'sales';
         $data['showonmenu'] = false;
         $data['title'] = 'group-or-split';
-        $data['icon'] = 'fa-solid fa-wand-magic-sparkles';
+        $data['icon'] = 'fas fa-magic';
         return $data;
     }
 
@@ -143,7 +142,7 @@ class DocumentStitcher extends Controller
                 $doc->dtopor1 != $newDoc->dtopor1 ||
                 $doc->dtopor2 != $newDoc->dtopor2 ||
                 $doc->subjectColumnValue() != $newDoc->subjectColumnValue()) {
-                Tools::log()->warning('incompatible-document', ['%code%' => $newDoc->codigo]);
+                $this->toolBox()->i18nLog()->warning('incompatible-document', ['%code%' => $newDoc->codigo]);
                 return false;
             }
         }
@@ -196,7 +195,7 @@ class DocumentStitcher extends Controller
             $doc->idestado = $idestado;
             if (false === $doc->save()) {
                 $this->dataBase->rollback();
-                Tools::log()->error('record-save-error');
+                $this->toolBox()->i18nLog()->error('record-save-error');
                 return;
             }
         }
@@ -206,7 +205,7 @@ class DocumentStitcher extends Controller
             $line->servido += $quantities[$line->primaryColumnValue()];
             if (false === $line->save()) {
                 $this->dataBase->rollback();
-                Tools::log()->error('record-save-error');
+                $this->toolBox()->i18nLog()->error('record-save-error');
                 return;
             }
         }
@@ -265,7 +264,7 @@ class DocumentStitcher extends Controller
 
         if (false === $generator->generate($prototype, $newClass, $newLines, $quantities, $properties)) {
             $this->dataBase->rollback();
-            Tools::log()->error('record-save-error');
+            $this->toolBox()->i18nLog()->error('record-save-error');
             return;
         }
 
@@ -274,7 +273,7 @@ class DocumentStitcher extends Controller
         // redirect to the new document
         foreach ($generator->getLastDocs() as $doc) {
             $this->redirect($doc->url());
-            Tools::log()->notice('record-updated-correctly');
+            $this->toolBox()->i18nLog()->notice('record-updated-correctly');
             break;
         }
     }
@@ -303,7 +302,7 @@ class DocumentStitcher extends Controller
      */
     protected function getDocInfoLineDescription($doc): string
     {
-        $description = Tools::lang()->trans($doc->modelClassName() . '-min') . ' ' . $doc->codigo;
+        $description = $this->toolBox()->i18n()->trans($doc->modelClassName() . '-min') . ' ' . $doc->codigo;
 
         if (isset($doc->numero2) && $doc->numero2) {
             $description .= ' (' . $doc->numero2 . ')';

@@ -20,7 +20,6 @@
 namespace FacturaScripts\Core\Controller;
 
 use FacturaScripts\Core\Lib\ExtendedController\PanelController;
-use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Lib\Email\NewMail;
 use FacturaScripts\Dinamic\Model\EmailNotification;
 
@@ -49,28 +48,27 @@ class ConfigEmail extends PanelController
         $this->createViewsEmailNotification();
     }
 
-    protected function createViewsEmail(string $viewName = 'ConfigEmail'): void
+    protected function createViewsEmail(string $viewName = 'ConfigEmail')
     {
         $this->addEditView($viewName, 'Settings', 'email', 'fas fa-envelope');
 
         // desactivamos los botones nuevo y eliminar
-        $this->tab($viewName)
-            ->setSettings('btnNew', false)
-            ->setSettings('btnDelete', false);
+        $this->setSettings($viewName, 'btnNew', false);
+        $this->setSettings($viewName, 'btnDelete', false);
     }
 
-    protected function createViewsEmailNotification(string $viewName = 'ListEmailNotification'): void
+    protected function createViewsEmailNotification(string $viewName = 'ListEmailNotification')
     {
-        $this->addListView($viewName, 'EmailNotification', 'notifications', 'fas fa-bell')
-            ->addSearchFields(['body', 'name', 'subject'])
-            ->addOrderBy(['date'], 'date')
-            ->addOrderBy(['name'], 'name', 1);
+        $this->addListView($viewName, 'EmailNotification', 'notifications', 'fas fa-bell');
+        $this->views[$viewName]->addOrderBy(['date'], 'date');
+        $this->views[$viewName]->addOrderBy(['name'], 'name', 1);
+        $this->views[$viewName]->addSearchFields(['body', 'name', 'subject']);
 
         // filtros
-        $this->listView($viewName)->addFilterCheckbox('enabled');
+        $this->views[$viewName]->addFilterCheckbox('enabled');
 
         // desactivamos el botón nuevo
-        $this->tab($viewName)->setSettings('btnNew', false);
+        $this->setSettings($viewName, 'btnNew', false);
 
         // añadimos los botones de activar y desactivar
         $this->addButton($viewName, [
@@ -88,26 +86,20 @@ class ConfigEmail extends PanelController
         ]);
     }
 
-    protected function createViewsEmailSent(string $viewName = 'ListEmailSent'): void
+    protected function createViewsEmailSent(string $viewName = 'ListEmailSent')
     {
-        $this->addListView($viewName, 'EmailSent', 'emails-sent', 'fas fa-paper-plane')
-            ->addSearchFields(['addressee', 'body', 'subject'])
-            ->addOrderBy(['date'], 'date', 2);
+        $this->addListView($viewName, 'EmailSent', 'emails-sent', 'fas fa-paper-plane');
+        $this->views[$viewName]->addOrderBy(['date'], 'date', 2);
+        $this->views[$viewName]->addSearchFields(['addressee', 'body', 'subject']);
 
         // filtros
         $users = $this->codeModel->all('users', 'nick', 'nick');
-        $this->listView($viewName)->addFilterSelect('nick', 'user', 'nick', $users);
-
-        $from = $this->codeModel->all('emails_sent', 'email_from', 'email_from');
-        $this->listView($viewName)->addFilterSelect('from', 'from', 'email_from', $from);
-
-        $this->listView($viewName)
-            ->addFilterPeriod('date', 'period', 'date')
-            ->addFilterCheckbox('opened')
-            ->addFilterCheckbox('attachment', 'has-attachments');
+        $this->views[$viewName]->addFilterSelect('nick', 'user', 'nick', $users);
+        $this->views[$viewName]->addFilterPeriod('date', 'period', 'date');
+        $this->views[$viewName]->addFilterCheckbox('opened');
 
         // desactivamos el botón nuevo
-        $this->tab($viewName)->setSettings('btnNew', false);
+        $this->setSettings($viewName, 'btnNew', false);
     }
 
     protected function enableNotificationAction(bool $value): void
@@ -115,7 +107,7 @@ class ConfigEmail extends PanelController
         if (false === $this->validateFormToken()) {
             return;
         } elseif (false === $this->user->can('EditEmailNotification', 'update')) {
-            Tools::log()->warning('not-allowed-modify');
+            $this->toolBox()->i18nLog()->warning('not-allowed-modify');
             return;
         }
 
@@ -132,12 +124,12 @@ class ConfigEmail extends PanelController
 
             $notification->enabled = $value;
             if (false === $notification->save()) {
-                Tools::log()->warning('record-save-error');
+                $this->toolBox()->i18nLog()->warning('record-save-error');
                 return;
             }
         }
 
-        Tools::log()->notice('record-updated-correctly');
+        $this->toolBox()->i18nLog()->notice('record-updated-correctly');
     }
 
     /**
@@ -197,7 +189,7 @@ class ConfigEmail extends PanelController
         }
     }
 
-    protected function testMailAction(): void
+    protected function testMailAction()
     {
         // guardamos los datos del formulario primero
         if (false === $this->editAction()) {
@@ -206,10 +198,10 @@ class ConfigEmail extends PanelController
 
         $email = new NewMail();
         if ($email->test()) {
-            Tools::log()->notice('mail-test-ok');
+            $this->toolBox()->i18nLog()->notice('mail-test-ok');
             return;
         }
 
-        Tools::log()->warning('mail-test-error');
+        $this->toolBox()->i18nLog()->warning('mail-test-error');
     }
 }

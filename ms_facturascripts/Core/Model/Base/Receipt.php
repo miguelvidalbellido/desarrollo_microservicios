@@ -19,7 +19,6 @@
 
 namespace FacturaScripts\Core\Model\Base;
 
-use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Lib\ReceiptGenerator;
 use FacturaScripts\Dinamic\Model\FormaPago;
 
@@ -90,10 +89,11 @@ abstract class Receipt extends ModelOnChangeClass
     public function clear()
     {
         parent::clear();
-        $this->coddivisa = Tools::settings('default', 'coddivisa');
-        $this->codpago = Tools::settings('default', 'codpago');
-        $this->fecha = Tools::date();
-        $this->idempresa = Tools::settings('default', 'idempresa');
+        $appSettings = $this->toolBox()->appSettings();
+        $this->coddivisa = $appSettings->get('default', 'coddivisa');
+        $this->codpago = $appSettings->get('default', 'codpago');
+        $this->fecha = date(self::DATE_STYLE);
+        $this->idempresa = $appSettings->get('default', 'idempresa');
         $this->importe = 0.0;
         $this->liquidado = 0.0;
         $this->numero = 1;
@@ -105,7 +105,7 @@ abstract class Receipt extends ModelOnChangeClass
     {
         foreach ($this->getPayments() as $pay) {
             if (false === $pay->delete()) {
-                Tools::log()->warning('cant-remove-payment');
+                $this->toolBox()->i18nLog()->warning('cant-remove-payment');
                 return false;
             }
         }
@@ -153,7 +153,7 @@ abstract class Receipt extends ModelOnChangeClass
 
     public function test(): bool
     {
-        $this->observaciones = Tools::noHtml($this->observaciones);
+        $this->observaciones = $this->toolBox()->utils()->noHtml($this->observaciones);
 
         // asignamos el código de la factura
         if (empty($this->codigofactura)) {
@@ -164,7 +164,7 @@ abstract class Receipt extends ModelOnChangeClass
         if ($this->pagado === false) {
             $this->fechapago = null;
         } elseif (empty($this->fechapago)) {
-            $this->fechapago = Tools::date();
+            $this->fechapago = date(self::DATE_STYLE);
         }
 
         // comprobamos la fecha de vencimiento

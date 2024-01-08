@@ -21,9 +21,6 @@
 namespace FacturaScripts\Core\Model;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
-use FacturaScripts\Core\Model\Base\ModelTrait;
-use FacturaScripts\Core\Model\Base\SalesDocument;
-use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\LineaPedidoCliente as LineaPedido;
 
 /**
@@ -31,9 +28,10 @@ use FacturaScripts\Dinamic\Model\LineaPedidoCliente as LineaPedido;
  *
  * @author Carlos García Gómez <carlos@facturascripts.com>
  */
-class PedidoCliente extends SalesDocument
+class PedidoCliente extends Base\SalesDocument
 {
-    use ModelTrait;
+
+    use Base\ModelTrait;
 
     /**
      * Date on which the validity of the estimation ends.
@@ -54,7 +52,7 @@ class PedidoCliente extends SalesDocument
         parent::clear();
 
         // set default expiration
-        $expirationDays = Tools::settings('default', 'finofertadays');
+        $expirationDays = $this->toolBox()->appSettings()->get('default', 'finofertadays');
         if ($expirationDays) {
             $this->finoferta = date(self::DATE_STYLE, strtotime('+' . $expirationDays . ' days'));
         }

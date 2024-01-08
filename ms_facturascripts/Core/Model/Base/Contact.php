@@ -19,7 +19,6 @@
 
 namespace FacturaScripts\Core\Model\Base;
 
-use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Lib\FiscalNumberValidator;
 
 /**
@@ -111,9 +110,9 @@ abstract class Contact extends ModelClass
     public function clear()
     {
         parent::clear();
-        $this->fechaalta = Tools::date();
+        $this->fechaalta = date(self::DATE_STYLE);
         $this->personafisica = true;
-        $this->tipoidfiscal = Tools::settings('default', 'tipoidfiscal');
+        $this->tipoidfiscal = $this->toolBox()->appSettings()->get('default', 'tipoidfiscal');
     }
 
     /**
@@ -123,26 +122,27 @@ abstract class Contact extends ModelClass
      */
     public function test()
     {
-        $this->cifnif = Tools::noHtml($this->cifnif);
+        $utils = $this->toolBox()->utils();
+        $this->cifnif = $utils->noHtml($this->cifnif);
         if ($this->email !== null) {
-            $this->email = Tools::noHtml(mb_strtolower($this->email, 'UTF8'));
+            $this->email = $utils->noHtml(mb_strtolower($this->email, 'UTF8'));
         }
-        $this->fax = Tools::noHtml($this->fax) ?? '';
-        $this->nombre = Tools::noHtml($this->nombre);
-        $this->observaciones = Tools::noHtml($this->observaciones) ?? '';
-        $this->telefono1 = Tools::noHtml($this->telefono1) ?? '';
-        $this->telefono2 = Tools::noHtml($this->telefono2) ?? '';
+        $this->fax = $utils->noHtml($this->fax) ?? '';
+        $this->nombre = $utils->noHtml($this->nombre);
+        $this->observaciones = $utils->noHtml($this->observaciones) ?? '';
+        $this->telefono1 = $utils->noHtml($this->telefono1) ?? '';
+        $this->telefono2 = $utils->noHtml($this->telefono2) ?? '';
 
         $validator = new FiscalNumberValidator();
         if (!empty($this->cifnif) && false === $validator->validate($this->tipoidfiscal, $this->cifnif)) {
-            Tools::log()->warning('not-valid-fiscal-number', ['%type%' => $this->tipoidfiscal, '%number%' => $this->cifnif]);
+            $this->toolBox()->i18nLog()->warning('not-valid-fiscal-number', ['%type%' => $this->tipoidfiscal, '%number%' => $this->cifnif]);
             return false;
         }
 
         if (empty($this->email)) {
             $this->email = '';
         } elseif (false === filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
-            Tools::log()->warning('not-valid-email', ['%email%' => $this->email]);
+            $this->toolBox()->i18nLog()->warning('not-valid-email', ['%email%' => $this->email]);
             $this->email = '';
             return false;
         }

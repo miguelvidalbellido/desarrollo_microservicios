@@ -31,16 +31,8 @@ class Vies
 {
     const VIES_URL = "https://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl";
 
-    private static $lastError = '';
-
     public static function check(string $cifnif, string $codiso): int
     {
-        // comprobamos si la extensión soap está instalada
-        if (!extension_loaded('soap')) {
-            Tools::log()->warning('soap-extension-not-installed');
-            return -1;
-        }
-
         // quitamos caracteres especiales del cifnif
         $cifnif = str_replace(['_', '-', '.', ',', '?', '¿', ' ', '/', '\\'], '', strtoupper(trim($cifnif)));
 
@@ -64,15 +56,8 @@ class Vies
         return static::getViesInfo($cifnif, $codiso);
     }
 
-    public static function getLastError(): string
-    {
-        return self::$lastError;
-    }
-
     private static function getViesInfo(string $vatNumber, string $codiso): int
     {
-        self::$lastError = '';
-
         try {
             $client = new SoapClient(self::VIES_URL, ['exceptions' => true]);
             $json = json_encode(
@@ -91,7 +76,6 @@ class Vies
             return 0;
         } catch (Exception $ex) {
             Tools::log('VatInfoFinder')->error($ex->getCode() . ' - ' . $ex->getMessage());
-            self::$lastError = $ex->getMessage();
             if ($ex->getMessage() == 'INVALID_INPUT') {
                 return 0;
             }
