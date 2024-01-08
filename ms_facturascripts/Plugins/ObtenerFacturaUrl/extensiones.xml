@@ -1,4 +1,0 @@
-<controlador>
-    <nombre>test</nombre>
-    <ruta>Controller/ApiObtenerFacturaUrlController.php</ruta>
-</controlador>
