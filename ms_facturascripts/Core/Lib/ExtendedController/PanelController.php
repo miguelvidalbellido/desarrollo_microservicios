@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FacturaScripts
- * Copyright (C) 2017-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2017-2022 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -20,18 +20,18 @@
 namespace FacturaScripts\Core\Lib\ExtendedController;
 
 use FacturaScripts\Core\Base\ControllerPermissions;
-use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\User;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Controller to edit data through the vertical panel
  *
- * @author Carlos García Gómez           <carlos@facturascripts.com>
+ * @author Carlos García Gómez  <carlos@facturascripts.com>
  * @author Jose Antonio Cuello Principal <yopli2000@gmail.com>
  */
 abstract class PanelController extends BaseController
 {
+
     /**
      * Indicates if the main view has data or is empty.
      *
@@ -117,7 +117,7 @@ abstract class PanelController extends BaseController
      *
      * @param string $position
      */
-    public function setTabsPosition(string $position): void
+    public function setTabsPosition(string $position)
     {
         $this->tabsPosition = $position;
         switch ($this->tabsPosition) {
@@ -150,15 +150,12 @@ abstract class PanelController extends BaseController
      * @param string $modelName
      * @param string $viewTitle
      * @param string $viewIcon
-     * @return EditListView
      */
-    protected function addEditListView(string $viewName, string $modelName, string $viewTitle, string $viewIcon = 'fas fa-bars'): EditListView
+    protected function addEditListView(string $viewName, string $modelName, string $viewTitle, string $viewIcon = 'fas fa-bars')
     {
         $view = new EditListView($viewName, $viewTitle, self::MODEL_NAMESPACE . $modelName, $viewIcon);
         $view->settings['card'] = $this->tabsPosition !== 'top';
         $this->addCustomView($viewName, $view);
-
-        return $view;
     }
 
     /**
@@ -168,15 +165,12 @@ abstract class PanelController extends BaseController
      * @param string $modelName
      * @param string $viewTitle
      * @param string $viewIcon
-     * @return EditView
      */
-    protected function addEditView(string $viewName, string $modelName, string $viewTitle, string $viewIcon = 'fas fa-edit'): EditView
+    protected function addEditView(string $viewName, string $modelName, string $viewTitle, string $viewIcon = 'fas fa-edit')
     {
         $view = new EditView($viewName, $viewTitle, self::MODEL_NAMESPACE . $modelName, $viewIcon);
         $view->settings['card'] = $this->tabsPosition !== 'top';
         $this->addCustomView($viewName, $view);
-
-        return $view;
     }
 
     /**
@@ -187,14 +181,11 @@ abstract class PanelController extends BaseController
      * @param string $modelName
      * @param string $viewTitle
      * @param string $viewIcon
-     * @return HtmlView
      */
-    protected function addHtmlView(string $viewName, string $fileName, string $modelName, string $viewTitle, string $viewIcon = 'fab fa-html5'): HtmlView
+    protected function addHtmlView(string $viewName, string $fileName, string $modelName, string $viewTitle, string $viewIcon = 'fab fa-html5')
     {
         $view = new HtmlView($viewName, $viewTitle, self::MODEL_NAMESPACE . $modelName, $fileName, $viewIcon);
         $this->addCustomView($viewName, $view);
-
-        return $view;
     }
 
     /**
@@ -204,15 +195,12 @@ abstract class PanelController extends BaseController
      * @param string $modelName
      * @param string $viewTitle
      * @param string $viewIcon
-     * @return ListView
      */
-    protected function addListView(string $viewName, string $modelName, string $viewTitle, string $viewIcon = 'fas fa-list'): ListView
+    protected function addListView(string $viewName, string $modelName, string $viewTitle, string $viewIcon = 'fas fa-list')
     {
         $view = new ListView($viewName, $viewTitle, self::MODEL_NAMESPACE . $modelName, $viewIcon);
         $view->settings['card'] = $this->tabsPosition !== 'top';
         $this->addCustomView($viewName, $view);
-
-        return $view;
     }
 
     /**
@@ -223,7 +211,7 @@ abstract class PanelController extends BaseController
     protected function editAction()
     {
         if (false === $this->permissions->allowUpdate) {
-            Tools::log()->warning('not-allowed-modify');
+            $this->toolBox()->i18nLog()->warning('not-allowed-modify');
             return false;
         } elseif (false === $this->validateFormToken()) {
             return false;
@@ -232,7 +220,7 @@ abstract class PanelController extends BaseController
         // loads model data
         $code = $this->request->request->get('code', '');
         if (!$this->views[$this->active]->model->loadFromCode($code)) {
-            Tools::log()->error('record-not-found');
+            $this->toolBox()->i18nLog()->error('record-not-found');
             return false;
         }
 
@@ -246,18 +234,18 @@ abstract class PanelController extends BaseController
             $this->views[$this->active]->model->{$pkColumn} = $code;
             // change in database
             if (!$this->views[$this->active]->model->changePrimaryColumnValue($this->views[$this->active]->newCode)) {
-                Tools::log()->error('record-save-error');
+                $this->toolBox()->i18nLog()->error('record-save-error');
                 return false;
             }
         }
 
         // save in database
         if ($this->views[$this->active]->model->save()) {
-            Tools::log()->notice('record-updated-correctly');
+            $this->toolBox()->i18nLog()->notice('record-updated-correctly');
             return true;
         }
 
-        Tools::log()->error('record-save-error');
+        $this->toolBox()->i18nLog()->error('record-save-error');
         return false;
     }
 
@@ -274,25 +262,7 @@ abstract class PanelController extends BaseController
                 break;
 
             case 'save-ok':
-                Tools::log()->notice('record-updated-correctly');
-                break;
-
-            case 'widget-library-search':
-                $this->setTemplate(false);
-                $results = $this->widgetLibrarySearchAction();
-                $this->response->setContent(json_encode($results));
-                break;
-
-            case 'widget-library-upload':
-                $this->setTemplate(false);
-                $results = $this->widgetLibraryUploadAction();
-                $this->response->setContent(json_encode($results));
-                break;
-
-            case 'widget-variante-search':
-                $this->setTemplate(false);
-                $results = $this->widgetVarianteSearchAction();
-                $this->response->setContent(json_encode($results));
+                $this->toolBox()->i18nLog()->notice('record-updated-correctly');
                 break;
         }
     }
@@ -318,9 +288,7 @@ abstract class PanelController extends BaseController
                 if ($this->deleteAction() && $this->active === $this->getMainViewName()) {
                     // al eliminar el registro principal, redirigimos al listado para mostrar ahí el mensaje de éxito
                     $listUrl = $this->views[$this->active]->model->url('list');
-                    $redirect = strpos($listUrl, '?') === false ?
-                        $listUrl . '?action=delete-ok' :
-                        $listUrl . '&action=delete-ok';
+                    $redirect = strpos($listUrl, '?') === false ? $listUrl . '?action=delete-ok' : $listUrl . '&action=delete-ok';
                     $this->redirect($redirect);
                 }
                 break;
@@ -356,7 +324,7 @@ abstract class PanelController extends BaseController
     protected function insertAction()
     {
         if (false === $this->permissions->allowUpdate) {
-            Tools::log()->warning('not-allowed-modify');
+            $this->toolBox()->i18nLog()->warning('not-allowed-modify');
             return false;
         } elseif (false === $this->validateFormToken()) {
             return false;
@@ -365,13 +333,13 @@ abstract class PanelController extends BaseController
         // loads form data
         $this->views[$this->active]->processFormData($this->request, 'edit');
         if ($this->views[$this->active]->model->exists()) {
-            Tools::log()->error('duplicate-record');
+            $this->toolBox()->i18nLog()->error('duplicate-record');
             return false;
         }
 
         // save in database
         if (false === $this->views[$this->active]->model->save()) {
-            Tools::log()->error('record-save-error');
+            $this->toolBox()->i18nLog()->error('record-save-error');
             return false;
         }
 
@@ -381,124 +349,7 @@ abstract class PanelController extends BaseController
         }
 
         $this->views[$this->active]->newCode = $this->views[$this->active]->model->primaryColumnValue();
-        Tools::log()->notice('record-updated-correctly');
+        $this->toolBox()->i18nLog()->notice('record-updated-correctly');
         return true;
-    }
-
-    protected function widgetLibrarySearchAction(): array
-    {
-        // localizamos la pestaña y el nombre de la columna
-        $activeTab = $this->request->request->get('active_tab', '');
-        $colName = $this->request->request->get('col_name', '');
-
-        // si está vacío, no hacemos nada
-        if (empty($activeTab) || empty($colName)) {
-            return [];
-        }
-
-        // buscamos la columna
-        $column = $this->tab($activeTab)->columnForField($colName);
-        if (empty($column) || $column->widget->getType() !== 'library') {
-            return [];
-        }
-
-        $files = $column->widget->files(
-            $this->request->request->get('query', ''),
-            $this->request->request->get('sort', '')
-        );
-
-        $results = [];
-        foreach ($files as $file) {
-            $results[] = [
-                'id_file' => $file->idfile,
-                'filename' => $file->filename,
-                'date' => $file->date,
-                'hour' => $file->hour,
-                'size' => Tools::bytes($file->size),
-                'mime_type' => $file->mimetype,
-                'is_image' => $file->isImage(),
-                'url' => $file->url('download-permanent'),
-                'selected_value' => (int)$column->widget->plainText($this->tab($activeTab)->model),
-            ];
-        }
-        return $results;
-    }
-
-    protected function widgetLibraryUploadAction(): array
-    {
-        // localizamos la pestaña y el nombre de la columna
-        $activeTab = $this->request->request->get('active_tab', '');
-        $colName = $this->request->request->get('col_name', '');
-
-        // si está vacío, no hacemos nada
-        if (empty($activeTab) || empty($colName)) {
-            return [];
-        }
-
-        // buscamos la columna
-        $column = $this->tab($activeTab)->columnForField($colName);
-        if (empty($column) || $column->widget->getType() !== 'library') {
-            return [];
-        }
-
-        $file = $column->widget->uploadFile($this->request->files->get('file'));
-        if (empty($file)) {
-            return [];
-        }
-
-        return [
-            [
-                'id_file' => $file->idfile,
-                'filename' => $file->filename,
-                'date' => $file->date,
-                'hour' => $file->hour,
-                'size' => Tools::bytes($file->size),
-                'mime_type' => $file->mimetype,
-                'is_image' => $file->isImage(),
-                'url' => $file->url('download-permanent'),
-                'selected_value' => (int)$column->widget->plainText($this->tab($activeTab)->model),
-            ]
-        ];
-    }
-
-    protected function widgetVarianteSearchAction(): array
-    {
-        // localizamos la pestaña y el nombre de la columna
-        $activeTab = $this->request->request->get('active_tab', '');
-        $colName = $this->request->request->get('col_name', '');
-
-        // si está vacío, no hacemos nada
-        if (empty($activeTab) || empty($colName)) {
-            return [];
-        }
-
-        // buscamos la columna
-        $column = $this->tab($activeTab)->columnForField($colName);
-        if (empty($column) || $column->widget->getType() !== 'variante') {
-            return [];
-        }
-
-        $variantes = $column->widget->variantes(
-            $this->request->request->get('query', ''),
-            $this->request->request->get('codfabricante', ''),
-            $this->request->request->get('codfamilia', ''),
-            $this->request->request->get('sort', '')
-        );
-
-        $results = [];
-        foreach ($variantes as $variante) {
-            $results[] = [
-                'id_variante' => $variante->idvariante,
-                'id_producto' => $variante->idproducto,
-                'referencia' => $variante->referencia,
-                'descripcion' => $variante->description(),
-                'precio' => $variante->precio,
-                'precio_str' => Tools::money($variante->precio),
-                'stock' => $variante->stockfis,
-                'stock_str' => Tools::number($variante->stockfis, 0),
-                'match' => $variante->{$column->widget->match},
-            ];
-        }
-        return $results;
     }
 }

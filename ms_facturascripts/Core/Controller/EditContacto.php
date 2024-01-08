@@ -23,7 +23,6 @@ use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
 use FacturaScripts\Core\Lib\ExtendedController\BaseView;
 use FacturaScripts\Core\Lib\ExtendedController\DocFilesTrait;
 use FacturaScripts\Core\Lib\ExtendedController\EditController;
-use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\Contacto;
 use FacturaScripts\Dinamic\Model\RoleAccess;
 
@@ -94,19 +93,19 @@ class EditContacto extends EditController
     {
         $access = $this->getRolePermissions('EditCliente');
         if (false === $access['allowupdate']) {
-            Tools::log()->warning('not-allowed-update');
+            self::toolBox()::i18nLog()->warning('not-allowed-update');
             return;
         }
 
         $mvn = $this->getMainViewName();
         $customer = $this->views[$mvn]->model->getCustomer();
         if ($customer->exists()) {
-            Tools::log()->notice('record-updated-correctly');
+            $this->toolBox()->i18nLog()->notice('record-updated-correctly');
             $this->redirect($customer->url() . '&action=save-ok');
             return;
         }
 
-        Tools::log()->error('record-save-error');
+        $this->toolBox()->i18nLog()->error('record-save-error');
     }
 
     protected function createEmailsView(string $viewName = 'ListEmailSent')
@@ -115,10 +114,10 @@ class EditContacto extends EditController
         $this->views[$viewName]->addOrderBy(['date'], 'date', 2);
         $this->views[$viewName]->addSearchFields(['addressee', 'body', 'subject']);
 
-        // desactivamos la columna de destinatario
+        // disable column
         $this->views[$viewName]->disableColumn('to');
 
-        // desactivamos el botón de nuevo
+        // disable buttons
         $this->setSettings($viewName, 'btnNew', false);
     }
 
@@ -126,19 +125,19 @@ class EditContacto extends EditController
     {
         $access = $this->getRolePermissions('EditProveedor');
         if (false === $access['allowupdate']) {
-            Tools::log()->warning('not-allowed-update');
+            self::toolBox()::i18nLog()->warning('not-allowed-update');
             return;
         }
 
         $mvn = $this->getMainViewName();
         $supplier = $this->views[$mvn]->model->getSupplier();
         if ($supplier->exists()) {
-            Tools::log()->notice('record-updated-correctly');
+            $this->toolBox()->i18nLog()->notice('record-updated-correctly');
             $this->redirect($supplier->url() . '&action=save-ok');
             return;
         }
 
-        Tools::log()->error('record-save-error');
+        $this->toolBox()->i18nLog()->error('record-save-error');
     }
 
     /**
@@ -239,7 +238,7 @@ class EditContacto extends EditController
      */
     protected function loadData($viewName, $view)
     {
-        $mvn = $this->getMainViewName();
+        $mainViewName = $this->getMainViewName();
 
         switch ($viewName) {
             case 'docfiles':
@@ -247,26 +246,13 @@ class EditContacto extends EditController
                 break;
 
             case 'ListEmailSent':
-                $email = $this->getViewModelValue($mvn, 'email');
-                if (empty($email)) {
-                    $this->setSettings($viewName, 'active', false);
-                    break;
-                }
-
+                $email = $this->getViewModelValue($mainViewName, 'email');
                 $where = [new DataBaseWhere('addressee', $email)];
                 $view->loadData('', $where);
-
-                // añadimos un botón para enviar un nuevo email
-                $this->addButton($viewName, [
-                    'action' => 'SendMail?email=' . $email,
-                    'color' => 'success',
-                    'icon' => 'fas fa-envelope',
-                    'label' => 'send',
-                    'type' => 'link'
-                ]);
+                $this->setSettings($viewName, 'active', $view->count > 0);
                 break;
 
-            case $mvn:
+            case $mainViewName:
                 parent::loadData($viewName, $view);
                 $this->loadLanguageValues($viewName);
                 if (false === $view->model->exists()) {
@@ -293,7 +279,7 @@ class EditContacto extends EditController
         $columnLangCode = $this->views[$viewName]->columnForName('language');
         if ($columnLangCode && $columnLangCode->widget->getType() === 'select') {
             $langs = [];
-            foreach (Tools::lang()->getAvailableLanguages() as $key => $value) {
+            foreach ($this->toolBox()->i18n()->getAvailableLanguages() as $key => $value) {
                 $langs[] = ['value' => $key, 'title' => $value];
             }
 

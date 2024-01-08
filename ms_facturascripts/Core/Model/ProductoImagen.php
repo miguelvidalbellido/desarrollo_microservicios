@@ -20,7 +20,6 @@
 namespace FacturaScripts\Core\Model;
 
 use FacturaScripts\Core\Base\MyFilesToken;
-use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\AttachedFile as DinAttachedFile;
 use FacturaScripts\Dinamic\Model\Producto as DinProducto;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -128,9 +127,9 @@ class ProductoImagen extends Base\ModelClass
             $imageHeight = imagesy($image);
             $ratio = $imageWidth / $imageHeight;
             if ($width / $height > $ratio) {
-                $width = intval($height * $ratio);
+                $width = $height * $ratio;
             } else {
-                $height = intval($width / $ratio);
+                $height = $width / $ratio;
             }
             $thumb = imagecreatetruecolor($width, $height);
             imagecopyresampled($thumb, $image, 0, 0, 0, 0, $width, $height, $imageWidth, $imageHeight);
@@ -154,7 +153,7 @@ class ProductoImagen extends Base\ModelClass
             imagedestroy($image);
             imagedestroy($thumb);
         } catch (Throwable $th) {
-            Tools::log()->error($th->getMessage());
+            self::toolBox()->log()->error($th->getMessage());
             return '';
         }
 

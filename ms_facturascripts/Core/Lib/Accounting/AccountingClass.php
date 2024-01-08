@@ -21,7 +21,6 @@ namespace FacturaScripts\Core\Lib\Accounting;
 
 use FacturaScripts\Core\Base\ToolBox;
 use FacturaScripts\Core\Model\Base\ModelClass;
-use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\Asiento;
 use FacturaScripts\Dinamic\Model\Partida;
 use FacturaScripts\Dinamic\Model\Subcuenta;
@@ -34,7 +33,9 @@ use FacturaScripts\Dinamic\Model\Subcuenta;
  */
 abstract class AccountingClass extends AccountingAccounts
 {
-    /** @var ModelClass */
+    /**
+     * @var ModelClass
+     */
     protected $document;
 
     /**
@@ -45,7 +46,7 @@ abstract class AccountingClass extends AccountingAccounts
     public function generate($model)
     {
         $this->document = $model;
-        $this->exercise->idempresa = $model->idempresa ?? Tools::settings('default', 'idempresa');
+        $this->exercise->idempresa = $model->idempresa ?? $this->toolBox()->appSettings()->get('default', 'idempresa');
     }
 
     /**
@@ -67,7 +68,7 @@ abstract class AccountingClass extends AccountingAccounts
      * Add a group of lines from array of subaccounts/amount.
      *
      * @param Asiento $accountEntry
-     * @param array $totals
+     * @param Array $totals
      * @param bool $isDebit
      * @param Subcuenta $counterpart
      * @param string $accountError
@@ -80,7 +81,7 @@ abstract class AccountingClass extends AccountingAccounts
         foreach ($totals as $code => $total) {
             $subaccount = $this->getSubAccount($code);
             if (empty($subaccount->codsubcuenta)) {
-                Tools::log()->warning($accountError);
+                $this->toolBox()->i18nLog()->warning($accountError);
                 return false;
             }
 
@@ -91,7 +92,7 @@ abstract class AccountingClass extends AccountingAccounts
             }
 
             if (false === $line->save()) {
-                Tools::log()->warning($saveError);
+                $this->toolBox()->i18nLog()->warning($saveError);
                 return false;
             }
         }
@@ -199,7 +200,6 @@ abstract class AccountingClass extends AccountingAccounts
 
     /**
      * @return ToolBox
-     * @deprecated since version 2023.1
      */
     protected function toolBox(): ToolBox
     {

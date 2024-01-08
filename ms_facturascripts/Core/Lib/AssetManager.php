@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FacturaScripts
- * Copyright (C) 2017-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2017-2022 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -26,6 +26,7 @@ namespace FacturaScripts\Core\Lib;
  */
 class AssetManager
 {
+
     /** @var array */
     protected static $list;
 
@@ -36,7 +37,7 @@ class AssetManager
      * @param string $asset
      * @param int $priority
      */
-    public static function add(string $type, string $asset, int $priority = 1): void
+    public static function add(string $type, string $asset, int $priority = 1)
     {
         static::init();
         if (!isset(static::$list[$type])) {
@@ -57,20 +58,10 @@ class AssetManager
         ];
     }
 
-    public static function addCss(string $asset, int $priority = 1): void
-    {
-        static::add('css', $asset, $priority);
-    }
-
-    public static function addJs(string $asset, int $priority = 1): void
-    {
-        static::add('js', $asset, $priority);
-    }
-
     /**
      * Clears all asset lists.
      */
-    public static function clear(): void
+    public static function clear()
     {
         static::$list = [
             'css' => [],
@@ -138,7 +129,7 @@ class AssetManager
      *
      * @param string $name
      */
-    public static function setAssetsForPage(string $name): void
+    public static function setAssetsForPage(string $name)
     {
         $base = DIRECTORY_SEPARATOR . 'Dinamic' . DIRECTORY_SEPARATOR . 'Assets' . DIRECTORY_SEPARATOR;
 
@@ -198,7 +189,7 @@ class AssetManager
         return str_replace(["\r\n", "\r", "\n", "\t", '  ', '    ', '    '], '', $buffer);
     }
 
-    protected static function init(): void
+    protected static function init()
     {
         if (!isset(static::$list)) {
             static::clear();

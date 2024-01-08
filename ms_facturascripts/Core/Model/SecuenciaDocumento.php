@@ -19,19 +19,15 @@
 
 namespace FacturaScripts\Core\Model;
 
-use FacturaScripts\Core\Model\Base\ModelClass;
-use FacturaScripts\Core\Model\Base\ModelTrait;
-use FacturaScripts\Core\Tools;
-
 /**
  * Personalize the numeration and code of sale and purchase documents.
  *
  * @author Carlos García Gómez          <carlos@facturascripts.com>
  * @author Cristo M. Estévez Hernández  <cristom.estevez@gmail.com>
  */
-class SecuenciaDocumento extends ModelClass
+class SecuenciaDocumento extends Base\ModelClass
 {
-    use ModelTrait;
+    use Base\ModelTrait;
 
     /** @var string */
     public $codejercicio;
@@ -95,7 +91,7 @@ class SecuenciaDocumento extends ModelClass
     public function test(): bool
     {
         if (empty($this->idempresa)) {
-            $this->idempresa = Tools::settings('default', 'idempresa');
+            $this->idempresa = $this->toolBox()->appSettings()->get('default', 'idempresa');
         }
 
         if (empty($this->inicio) || $this->inicio < 1) {
@@ -116,15 +112,15 @@ class SecuenciaDocumento extends ModelClass
 
     protected function testPatron(): bool
     {
-        $this->patron = Tools::noHtml($this->patron);
+        $this->patron = $this->toolBox()->utils()->noHtml($this->patron);
         if (empty($this->patron)) {
-            Tools::log()->warning('empty-pattern');
+            $this->toolBox()->i18nLog()->warning('empty-pattern');
             return false;
         }
 
         // si el patrón no tiene número, mostramos un aviso
         if (false === strpos($this->patron, '{NUM}') && false === strpos($this->patron, '{0NUM}')) {
-            Tools::log()->warning('pattern-without-number');
+            $this->toolBox()->i18nLog()->warning('pattern-without-number');
             return false;
         }
 
@@ -138,12 +134,12 @@ class SecuenciaDocumento extends ModelClass
             }
         }
         if (!$found) {
-            Tools::log()->warning('pattern-without-year');
+            $this->toolBox()->i18nLog()->warning('pattern-without-year');
         }
 
         // si el patrón no tiene serie, mostramos un aviso
         if (false === strpos($this->patron, '{SERIE}')) {
-            Tools::log()->warning('pattern-without-serie');
+            $this->toolBox()->i18nLog()->warning('pattern-without-serie');
         }
 
         return true;

@@ -62,10 +62,8 @@ class RowStatus extends VisualItem
     public function trClass($model, string $classPrefix = 'table-'): string
     {
         foreach ($this->options as $opt) {
-            $fieldName = $opt['fieldname'] ?? $this->fieldname;
-            $value = $model->{$fieldName} ?? null;
-            $this->replaceFieldValue($opt, $model);
-
+            $fieldname = isset($opt['fieldname']) ? $opt['fieldname'] : $this->fieldname;
+            $value = isset($model->{$fieldname}) ? $model->{$fieldname} : null;
             $rowColor = $this->getColorFromOption($opt, $value, $classPrefix);
             if (!empty($rowColor)) {
                 return $rowColor;
@@ -83,30 +81,13 @@ class RowStatus extends VisualItem
     public function trTitle($model): string
     {
         foreach ($this->options as $opt) {
-            $fieldName = $opt['fieldname'] ?? $this->fieldname;
-            $value = $model->{$fieldName} ?? null;
-            $this->replaceFieldValue($opt, $model);
-
+            $fieldname = isset($opt['fieldname']) ? $opt['fieldname'] : $this->fieldname;
+            $value = isset($model->{$fieldname}) ? $model->{$fieldname} : null;
             if ($this->applyOperatorFromOption($opt, $value)) {
                 return isset($opt['title']) ? static::$i18n->trans($opt['title']) : '';
             }
         }
 
         return '';
-    }
-
-    protected function replaceFieldValue(array &$opt, $model): void
-    {
-        if (false === array_key_exists('text', $opt)) {
-            return;
-        }
-
-        // si el texto contiene field:XXX, lo reemplazamos por el valor de $model->XXX
-        $matches = [];
-        if (preg_match_all('/field:([a-zA-Z0-9_]+)/', $opt['text'], $matches)) {
-            foreach ($matches[1] as $match) {
-                $opt['text'] = str_replace('field:' . $match, $model->{$match} ?? '', $opt['text']);
-            }
-        }
     }
 }

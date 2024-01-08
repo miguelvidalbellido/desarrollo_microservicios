@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FacturaScripts
- * Copyright (C) 2017-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2017-2022 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -21,7 +21,7 @@ namespace FacturaScripts\Core\Model;
 
 use FacturaScripts\Core\Base\DataBase;
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
-use FacturaScripts\Core\Tools;
+use FacturaScripts\Core\Base\ToolBox;
 
 /**
  * Auxiliary model to load a list of codes and their descriptions
@@ -35,18 +35,32 @@ class CodeModel
     const MODEL_NAMESPACE = '\\FacturaScripts\\Dinamic\\Model\\';
     const SEARCH_LIMIT = 50;
 
-    /** @var DataBase */
+    /**
+     * It provides direct access to the database.
+     *
+     * @var DataBase
+     */
     protected static $dataBase;
 
-    /** @var int */
-    protected static $limit;
-
-    /** @var string */
+    /**
+     * Value of the code field of the model read.
+     *
+     * @var string
+     */
     public $code;
 
-    /** @var string */
+    /**
+     * Value of the field description of the model read.
+     *
+     * @var string
+     */
     public $description;
 
+    /**
+     * Constructor and class initializer.
+     *
+     * @param array $data
+     */
     public function __construct(array $data = [])
     {
         if (empty($data)) {
@@ -87,13 +101,13 @@ class CodeModel
 
         self::initDataBase();
         if (!self::$dataBase->tableExists($tableName)) {
-            Tools::log()->error('table-not-found', ['%tableName%' => $tableName]);
+            ToolBox::i18nLog()->error('table-not-found', ['%tableName%' => $tableName]);
             return $result;
         }
 
         $sql = 'SELECT DISTINCT ' . $fieldCode . ' AS code, ' . $fieldDescription . ' AS description '
             . 'FROM ' . $tableName . DataBaseWhere::getSQLWhere($where) . ' ORDER BY 2 ASC';
-        foreach (self::$dataBase->selectLimit($sql, self::getLimit()) as $row) {
+        foreach (self::$dataBase->selectLimit($sql, self::ALL_LIMIT) as $row) {
             $result[] = new static($row);
         }
 
@@ -174,11 +188,6 @@ class CodeModel
         return empty($model->description) ? (string)$code : $model->description;
     }
 
-    public static function getLimit(): int
-    {
-        return self::$limit ?? self::ALL_LIMIT;
-    }
-
     /**
      * Load a CodeModel list (code and description) for the indicated table and search.
      *
@@ -204,15 +213,10 @@ class CodeModel
         return self::all($tableName, $fieldCode, $fieldDescription, false, $where);
     }
 
-    public static function setLimit(int $newLimit): void
-    {
-        self::$limit = $newLimit;
-    }
-
     /**
      * Inits database connection.
      */
-    protected static function initDataBase(): void
+    protected static function initDataBase()
     {
         if (self::$dataBase === null) {
             self::$dataBase = new DataBase();

@@ -21,7 +21,6 @@
 namespace FacturaScripts\Core\Model;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
-use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\Role as DinRole;
 use FacturaScripts\Dinamic\Model\RoleAccess as DinRoleAccess;
 
@@ -101,12 +100,12 @@ class RoleUser extends Base\ModelClass
     public function test(): bool
     {
         if (empty($this->nick)) {
-            Tools::log()->warning('nick-is-empty');
+            $this->toolBox()->i18nLog()->warning('nick-is-empty');
             return false;
         }
 
         if (empty($this->codrole)) {
-            Tools::log()->warning('role-is-empty');
+            $this->toolBox()->i18nLog()->warning('role-is-empty');
             return false;
         }
 

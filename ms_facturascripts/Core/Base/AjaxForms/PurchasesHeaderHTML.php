@@ -21,9 +21,9 @@ namespace FacturaScripts\Core\Base\AjaxForms;
 
 use FacturaScripts\Core\Base\Contract\PurchasesModInterface;
 use FacturaScripts\Core\Base\Translator;
+use FacturaScripts\Core\Model\Base\ModelCore;
 use FacturaScripts\Core\Model\Base\PurchaseDocument;
 use FacturaScripts\Core\Model\User;
-use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\Proveedor;
 
 /**
@@ -31,7 +31,6 @@ use FacturaScripts\Dinamic\Model\Proveedor;
  *
  * @author Carlos Garcia Gomez           <carlos@facturascripts.com>
  * @author Jose Antonio Cuello Principal <yopli2000@gmail.com>
- * @author Daniel Fernández Giménez      <hola@danielfg.es>
  */
 class PurchasesHeaderHTML
 {
@@ -76,7 +75,7 @@ class PurchasesHeaderHTML
         $model->codpago = $formData['codpago'] ?? $model->codpago;
         $model->codproveedor = $formData['codproveedor'] ?? $model->codproveedor;
         $model->codserie = $formData['codserie'] ?? $model->codserie;
-        $model->fecha = empty($formData['fecha']) ? $model->fecha : Tools::date($formData['fecha']);
+        $model->fecha = empty($formData['fecha']) ? $model->fecha : date(ModelCore::DATE_STYLE, strtotime($formData['fecha']));
         $model->femail = isset($formData['femail']) && !empty($formData['femail']) ? $formData['femail'] : $model->femail;
         $model->hora = $formData['hora'] ?? $model->hora;
         $model->nombre = $formData['nombre'] ?? $model->nombre;
@@ -113,7 +112,6 @@ class PurchasesHeaderHTML
             . self::renderField($i18n, $model, 'codalmacen')
             . self::renderField($i18n, $model, 'codserie')
             . self::renderField($i18n, $model, 'fecha')
-            . self::renderNewFields($i18n, $model)
             . self::renderField($i18n, $model, 'numproveedor')
             . self::renderField($i18n, $model, 'codpago')
             . self::renderField($i18n, $model, 'total')
@@ -123,7 +121,6 @@ class PurchasesHeaderHTML
             . self::renderField($i18n, $model, '_parents')
             . self::renderField($i18n, $model, '_children')
             . self::renderField($i18n, $model, '_email')
-            . self::renderNewBtnFields($i18n, $model)
             . self::renderField($i18n, $model, '_paid')
             . self::renderField($i18n, $model, 'idestado')
             . '</div>'
@@ -207,7 +204,7 @@ class PurchasesHeaderHTML
             . self::renderField($i18n, $model, 'coddivisa')
             . self::renderField($i18n, $model, 'tasaconv')
             . self::renderField($i18n, $model, 'user')
-            . self::renderNewModalFields($i18n, $model)
+            . self::renderNewFields($i18n, $model)
             . '</div>'
             . '</div>'
             . '<div class="modal-footer">'
@@ -323,64 +320,12 @@ class PurchasesHeaderHTML
         return null;
     }
 
-    private static function renderNewBtnFields(Translator $i18n, PurchaseDocument $model): string
-    {
-        // cargamos los nuevos campos
-        $newFields = [];
-        foreach (self::$mods as $mod) {
-            foreach ($mod->newBtnFields() as $field) {
-                if (false === in_array($field, $newFields)) {
-                    $newFields[] = $field;
-                }
-            }
-        }
-
-        // renderizamos los campos
-        $html = '';
-        foreach ($newFields as $field) {
-            foreach (self::$mods as $mod) {
-                $fieldHtml = $mod->renderField($i18n, $model, $field);
-                if ($fieldHtml !== null) {
-                    $html .= $fieldHtml;
-                    break;
-                }
-            }
-        }
-        return $html;
-    }
-
     private static function renderNewFields(Translator $i18n, PurchaseDocument $model): string
     {
         // cargamos los nuevos campos
         $newFields = [];
         foreach (self::$mods as $mod) {
             foreach ($mod->newFields() as $field) {
-                if (false === in_array($field, $newFields)) {
-                    $newFields[] = $field;
-                }
-            }
-        }
-
-        // renderizamos los campos
-        $html = '';
-        foreach ($newFields as $field) {
-            foreach (self::$mods as $mod) {
-                $fieldHtml = $mod->renderField($i18n, $model, $field);
-                if ($fieldHtml !== null) {
-                    $html .= $fieldHtml;
-                    break;
-                }
-            }
-        }
-        return $html;
-    }
-
-    private static function renderNewModalFields(Translator $i18n, PurchaseDocument $model): string
-    {
-        // cargamos los nuevos campos
-        $newFields = [];
-        foreach (self::$mods as $mod) {
-            foreach ($mod->newModalFields() as $field) {
                 if (false === in_array($field, $newFields)) {
                     $newFields[] = $field;
                 }

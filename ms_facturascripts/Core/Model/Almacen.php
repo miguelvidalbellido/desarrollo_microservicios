@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FacturaScripts
- * Copyright (C) 2013-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2013-2022 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -20,10 +20,6 @@
 namespace FacturaScripts\Core\Model;
 
 use FacturaScripts\Core\DataSrc\Almacenes;
-use FacturaScripts\Core\Model\Base\Address;
-use FacturaScripts\Core\Model\Base\CompanyRelationTrait;
-use FacturaScripts\Core\Model\Base\ModelTrait;
-use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\Empresa as DinEmpresa;
 
 /**
@@ -32,10 +28,11 @@ use FacturaScripts\Dinamic\Model\Empresa as DinEmpresa;
  * @author Carlos García Gómez  <carlos@facturascripts.com>
  * @author Artex Trading sa     <jcuello@artextrading.com>
  */
-class Almacen extends Address
+class Almacen extends Base\Address
 {
-    use ModelTrait;
-    use CompanyRelationTrait;
+
+    use Base\ModelTrait;
+    use Base\CompanyRelationTrait;
 
     /**
      * Primary key. Varchar (4).
@@ -61,7 +58,7 @@ class Almacen extends Address
     public function delete(): bool
     {
         if ($this->isDefault()) {
-            Tools::log()->warning('cant-delete-default-warehouse');
+            $this->toolBox()->i18nLog()->warning('cant-delete-default-warehouse');
             return false;
         }
 
@@ -89,7 +86,7 @@ class Almacen extends Address
      */
     public function isDefault(): bool
     {
-        return $this->codalmacen === Tools::settings('default', 'codalmacen');
+        return $this->codalmacen === $this->toolBox()->appSettings()->get('default', 'codalmacen');
     }
 
     public static function primaryColumn(): string
@@ -121,7 +118,7 @@ class Almacen extends Address
     public function test(): bool
     {
         if (!empty($this->codalmacen) && 1 !== preg_match('/^[A-Z0-9_\+\.\-]{1,4}$/i', $this->codalmacen)) {
-            Tools::log()->error(
+            $this->toolBox()->i18nLog()->error(
                 'invalid-alphanumeric-code',
                 ['%value%' => $this->codalmacen, '%column%' => 'codalmacen', '%min%' => '1', '%max%' => '4']
             );
@@ -129,12 +126,12 @@ class Almacen extends Address
         }
 
         if (empty($this->idempresa)) {
-            $this->idempresa = Tools::settings('default', 'idempresa');
+            $this->idempresa = $this->toolBox()->appSettings()->get('default', 'idempresa');
         }
 
-        $this->nombre = Tools::noHtml($this->nombre);
-        $this->telefono = Tools::noHtml($this->telefono);
-
+        $utils = $this->toolBox()->utils();
+        $this->nombre = $utils->noHtml($this->nombre);
+        $this->telefono = $utils->noHtml($this->telefono);
         return parent::test();
     }
 

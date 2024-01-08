@@ -20,7 +20,6 @@
 namespace FacturaScripts\Core\Controller;
 
 use FacturaScripts\Core\Lib\ExtendedController\ListController;
-use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\CronJob;
 
 /**
@@ -43,19 +42,18 @@ class ListLogMessage extends ListController
 
     protected function createViews()
     {
-        $this->createViewsLogs();
-        $this->createViewsCronJobs();
-        $this->createViewsWorkEvents();
+        $this->createLogMessageView();
+        $this->createCronJobView();
     }
 
-    protected function createViewsCronJobs(string $viewName = 'ListCronJob'): void
+    protected function createCronJobView(string $viewName = 'ListCronJob')
     {
-        $this->addView($viewName, 'CronJob', 'crons', 'fas fa-cogs')
-            ->addSearchFields(['jobname', 'pluginname'])
-            ->addOrderBy(['jobname'], 'job-name')
-            ->addOrderBy(['pluginname'], 'plugin')
-            ->addOrderBy(['date'], 'date')
-            ->addOrderBy(['duration'], 'duration');
+        $this->addView($viewName, 'CronJob', 'crons', 'fas fa-cogs');
+        $this->addSearchFields($viewName, ['jobname', 'pluginname']);
+        $this->addOrderBy($viewName, ['jobname'], 'job-name');
+        $this->addOrderBy($viewName, ['pluginname'], 'plugin');
+        $this->addOrderBy($viewName, ['date'], 'date');
+        $this->addOrderBy($viewName, ['duration'], 'duration');
 
         // filtros
         $plugins = $this->codeModel->all('cronjobs', 'pluginname', 'pluginname');
@@ -81,13 +79,13 @@ class ListLogMessage extends ListController
         ]);
     }
 
-    protected function createViewsLogs(string $viewName = 'ListLogMessage'): void
+    protected function createLogMessageView(string $viewName = 'ListLogMessage')
     {
-        $this->addView($viewName, 'LogMessage', 'history', 'fas fa-history')
-            ->addSearchFields(['context', 'message', 'uri'])
-            ->addOrderBy(['time', 'id'], 'date', 2)
-            ->addOrderBy(['level'], 'level')
-            ->addOrderBy(['ip'], 'ip');
+        $this->addView($viewName, 'LogMessage', 'history', 'fas fa-history');
+        $this->addSearchFields($viewName, ['context', 'message', 'uri']);
+        $this->addOrderBy($viewName, ['time', 'id'], 'date', 2);
+        $this->addOrderBy($viewName, ['level'], 'level');
+        $this->addOrderBy($viewName, ['ip'], 'ip');
 
         // filtros
         $channels = $this->codeModel->all('logs', 'channel', 'channel');
@@ -111,25 +109,12 @@ class ListLogMessage extends ListController
         $this->setSettings($viewName, 'btnNew', false);
     }
 
-    protected function createViewsWorkEvents(string $viewName = 'ListWorkEvent'): void
-    {
-        $this->addView($viewName, 'WorkEvent', 'work-events', 'fas fa-calendar-alt')
-            ->addSearchFields(['name', 'value'])
-            ->addOrderBy(['creation_date'], 'creation-date')
-            ->addOrderBy(['done_date'], 'date')
-            ->addOrderBy(['id'], 'id');
-
-        // desactivamos el botón nuevo
-        $this->setSettings($viewName, 'btnNew', false);
-    }
-
-
     protected function enableCronJobAction(bool $value): void
     {
         if (false === $this->validateFormToken()) {
             return;
         } elseif (false === $this->user->can('EditCronJob', 'update')) {
-            Tools::log()->warning('not-allowed-modify');
+            $this->toolBox()->i18nLog()->warning('not-allowed-modify');
             return;
         }
 
@@ -146,12 +131,12 @@ class ListLogMessage extends ListController
 
             $cron->enabled = $value;
             if (false === $cron->save()) {
-                Tools::log()->warning('record-save-error');
+                $this->toolBox()->i18nLog()->warning('record-save-error');
                 return;
             }
         }
 
-        Tools::log()->notice('record-updated-correctly');
+        $this->toolBox()->i18nLog()->notice('record-updated-correctly');
     }
 
     /**

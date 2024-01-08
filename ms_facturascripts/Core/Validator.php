@@ -21,11 +21,7 @@ namespace FacturaScripts\Core;
 
 class Validator
 {
-    /**
-     * Devuelve true si $text contiene solamente números, letras y los caracteres $extra.
-     * También comprueba si la longitud de $text está entre $min y $max.
-     */
-    public static function alphaNumeric(string $text, string $extra = '', int $min = 1, int $max = 99): bool
+    public static function alphaNumeric(string $text, string $extra = '', int $min = 1, $max = 99): bool
     {
         $replace = [
             '[' => '\[',
@@ -47,26 +43,16 @@ class Validator
         return preg_match($pattern, $text) === 1;
     }
 
-    /**
-     * Devuelve true si el email es válido
-     */
     public static function email(string $email): bool
     {
         return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
     }
 
-    /**
-     * Devuelve true si la cadena tiene entre $min y $max caracteres
-     */
-    public static function string(string $text, int $min = 1, int $max = 99): bool
+    public static function string(string $text, int $min = 1, $max = 99): bool
     {
         return strlen($text) >= $min && strlen($text) <= $max;
     }
 
-    /**
-     * Devuelve true si la $url es válida.
-     * Si $strict es true, entonces la url debe comenzar por http, https o cualquier otro protocolo válido.
-     */
     public static function url(string $url, bool $strict = false): bool
     {
         // si la url está vacía o comienza por javascript: entonces no es una url válida

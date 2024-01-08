@@ -22,7 +22,6 @@ namespace FacturaScripts\Core\Controller;
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
 use FacturaScripts\Core\Lib\ExtendedController\BaseView;
 use FacturaScripts\Core\Lib\ExtendedController\EditController;
-use FacturaScripts\Core\Tools;
 
 /**
  * Controller to edit a single item from the Almacen model
@@ -47,54 +46,30 @@ class EditAlmacen extends EditController
         return $data;
     }
 
-    protected function createStockView(string $viewName = 'ListStock'): void
+    protected function createStockView(string $viewName = 'ListStock')
     {
-        $this->addListView($viewName, 'Join\StockProducto', 'stock', 'fas fa-dolly')
-            ->addSearchFields(['stocks.referencia', 'productos.descripcion'])
-            ->addOrderBy(['stocks.referencia'], 'reference')
-            ->addOrderBy(['stocks.cantidad'], 'quantity')
-            ->addOrderBy(['stocks.disponible'], 'available')
-            ->addOrderBy(['stocks.reservada'], 'reserved')
-            ->addOrderBy(['stocks.pterecibir'], 'pending-reception')
-            ->addOrderBy(['productos.descripcion', 'stocks.referencia'], 'product');
+        $this->addListView($viewName, 'Join\StockProducto', 'stock', 'fas fa-dolly');
+        $this->views[$viewName]->addOrderBy(['stocks.referencia'], 'reference');
+        $this->views[$viewName]->addOrderBy(['stocks.cantidad'], 'quantity');
+        $this->views[$viewName]->addOrderBy(['stocks.disponible'], 'available');
+        $this->views[$viewName]->addOrderBy(['stocks.reservada'], 'reserved');
+        $this->views[$viewName]->addOrderBy(['stocks.pterecibir'], 'pending-reception');
+        $this->views[$viewName]->addOrderBy(['productos.descripcion', 'stocks.referencia'], 'product');
+        $this->views[$viewName]->addSearchFields(['stocks.referencia', 'productos.descripcion']);
 
         // filtros
         $manufacturers = $this->codeModel->all('fabricantes', 'codfabricante', 'nombre');
-        $this->listView($viewName)->addFilterSelect('manufacturer', 'manufacturer', 'productos.codfabricante', $manufacturers);
+        $this->views[$viewName]->addFilterSelect('manufacturer', 'manufacturer', 'manufacturer', $manufacturers);
 
         $families = $this->codeModel->all('familias', 'codfamilia', 'descripcion');
-        $this->listView($viewName)->addFilterSelect('family', 'family', 'productos.codfamilia', $families);
-
-        $this->listView($viewName)->addFilterSelectWhere('type', [
-            [
-                'label' => Tools::lang()->trans('all'),
-                'where' => []
-            ],
-            [
-                'label' => '------',
-                'where' => []
-            ],
-            [
-                'label' => Tools::lang()->trans('under-minimums'),
-                'where' => [new DataBaseWhere('stocks.disponible', 'field:stockmin', '<')]
-            ],
-            [
-                'label' => Tools::lang()->trans('excess'),
-                'where' => [new DataBaseWhere('stocks.disponible', 'field:stockmax', '>')]
-            ]
-        ]);
-
-        $this->listView($viewName)
-            ->addFilterNumber('max-stock', 'quantity', 'cantidad', '>=')
-            ->addFilterNumber('min-stock', 'quantity', 'cantidad', '<=');
+        $this->views[$viewName]->addFilterSelect('family', 'family', 'family', $families);
 
         // desactivamos la columna de almacén
-        $this->tab($viewName)->disableColumn('warehouse');
+        $this->views[$viewName]->disableColumn('warehouse');
 
         // desactivamos botones
-        $this->tab($viewName)
-            ->setSettings('btnDelete', false)
-            ->setSettings('btnNew', false);
+        $this->setSettings($viewName, 'btnDelete', false);
+        $this->setSettings($viewName, 'btnNew', false);
     }
 
     /**

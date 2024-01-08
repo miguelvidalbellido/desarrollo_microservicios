@@ -22,7 +22,6 @@ namespace FacturaScripts\Core\Model;
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
 use FacturaScripts\Core\DataSrc\Ejercicios;
 use FacturaScripts\Core\DataSrc\Empresas;
-use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\Empresa as DinEmpresa;
 
 /**
@@ -145,14 +144,14 @@ class Ejercicio extends Base\ModelClass
 
         if ($fecha2 > strtotime($this->fechainicio)) {
             if ($showError) {
-                Tools::log()->warning('date-out-of-rage-selected-better');
+                $this->toolBox()->i18nLog()->warning('date-out-of-rage-selected-better');
             }
 
             return $this->fechafin;
         }
 
         if ($showError) {
-            Tools::log()->warning('date-out-of-rage-selected-better');
+            $this->toolBox()->i18nLog()->warning('date-out-of-rage-selected-better');
         }
 
         return $this->fechainicio;
@@ -283,27 +282,27 @@ class Ejercicio extends Base\ModelClass
     {
         // TODO: Change dates verify to $this->inRange() call
         $this->codejercicio = trim($this->codejercicio);
-        $this->nombre = Tools::noHtml($this->nombre);
+        $this->nombre = $this->toolBox()->utils()->noHtml($this->nombre);
 
         if (empty($this->idempresa)) {
-            $this->idempresa = Tools::settings('default', 'idempresa');
+            $this->idempresa = $this->toolBox()->appSettings()->get('default', 'idempresa');
         }
 
         if (1 !== preg_match('/^[A-Z0-9_\+\.\-]{1,4}$/i', $this->codejercicio)) {
-            Tools::log()->error(
+            $this->toolBox()->i18nLog()->error(
                 'invalid-alphanumeric-code',
                 ['%value%' => $this->codejercicio, '%column%' => 'codejercicio', '%min%' => '1', '%max%' => '4']
             );
         } elseif (strlen($this->nombre) < 1 || strlen($this->nombre) > 100) {
-            Tools::log()->warning(
+            $this->toolBox()->i18nLog()->warning(
                 'invalid-column-lenght',
                 ['%column%' => 'nombre', '%min%' => '1', '%max%' => '100']
             );
         } elseif (strtotime($this->fechainicio) > strtotime($this->fechafin)) {
             $params = ['%endDate%' => $this->fechainicio, '%startDate%' => $this->fechafin];
-            Tools::log()->warning('start-date-later-end-date', $params);
+            $this->toolBox()->i18nLog()->warning('start-date-later-end-date', $params);
         } elseif (strtotime($this->fechainicio) < 1) {
-            Tools::log()->warning('date-invalid');
+            $this->toolBox()->i18nLog()->warning('date-invalid');
         } else {
             return parent::test();
         }
@@ -336,7 +335,7 @@ class Ejercicio extends Base\ModelClass
         }
 
         // for non-default companies we try to use range from 0001 to 9999
-        if ($this->idempresa != Tools::settings('default', 'idempresa')) {
+        if ($this->idempresa != $this->toolBox()->appSettings()->get('default', 'idempresa')) {
             $new = new static();
             for ($num = 1; $num < 1000; $num++) {
                 $code = sprintf('%04s', (int)$num);
@@ -359,7 +358,7 @@ class Ejercicio extends Base\ModelClass
         $where = [new DataBaseWhere('idempresa', $this->idempresa)];
         foreach ($this->all($where, [], 0, 0) as $ejercicio) {
             if ($this->inRange($ejercicio->fechainicio) || $this->inRange($ejercicio->fechafin)) {
-                Tools::log()->warning(
+                $this->toolBox()->i18nLog()->warning(
                     'exercise-date-range-exists', ['%start%' => $this->fechainicio, '%end%' => $this->fechafin]
                 );
                 return false;

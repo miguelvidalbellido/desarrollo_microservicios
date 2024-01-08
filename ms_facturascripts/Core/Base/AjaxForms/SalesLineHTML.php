@@ -19,13 +19,14 @@
 
 namespace FacturaScripts\Core\Base\AjaxForms;
 
+use FacturaScripts\Core\App\AppSettings;
 use FacturaScripts\Core\Base\Contract\SalesLineModInterface;
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
+use FacturaScripts\Core\Base\ToolBox;
 use FacturaScripts\Core\Base\Translator;
 use FacturaScripts\Core\DataSrc\Impuestos;
 use FacturaScripts\Core\Model\Base\SalesDocument;
 use FacturaScripts\Core\Model\Base\SalesDocumentLine;
-use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\Stock;
 use FacturaScripts\Dinamic\Model\Variante;
 
@@ -34,7 +35,6 @@ use FacturaScripts\Dinamic\Model\Variante;
  *
  * @author Carlos Garcia Gomez           <carlos@facturascripts.com>
  * @author Jose Antonio Cuello Principal <yopli2000@gmail.com>
- * @author Daniel Fernández Giménez      <hola@danielfg.es>
  */
 class SalesLineHTML
 {
@@ -58,7 +58,7 @@ class SalesLineHTML
      */
     public static function apply(SalesDocument &$model, array &$lines, array $formData)
     {
-        self::$columnView = $formData['columnView'] ?? Tools::settings('default', 'columnetosubtotal', 'subtotal');
+        self::$columnView = $formData['columnView'] ?? AppSettings::get('default', 'columnetosubtotal', 'subtotal');
 
         // update or remove lines
         $rmLineId = $formData['action'] === 'rm-line' ? $formData['selectedLine'] : 0;
@@ -131,7 +131,7 @@ class SalesLineHTML
             $map['iva_' . $idlinea] = $line->iva;
 
             // total
-            $map['linetotal_' . $idlinea] = self::subtotalValue($line, $model);
+            $map['linetotal_' . $idlinea] = $line->pvptotal * (100 + $line->iva + $line->recargo - $line->irpf) / 100;
 
             // neto
             $map['lineneto_' . $idlinea] = $line->pvptotal;
@@ -156,7 +156,7 @@ class SalesLineHTML
     public static function render(array $lines, SalesDocument $model): string
     {
         if (empty(self::$columnView)) {
-            self::$columnView = Tools::settings('default', 'columnetosubtotal', 'subtotal');
+            self::$columnView = AppSettings::get('default', 'columnetosubtotal', 'subtotal');
         }
 
         self::$numlines = count($lines);
@@ -291,22 +291,13 @@ class SalesLineHTML
             return $model->getNewLine();
         }
 
-        // buscamos el código de barras en las variantes
         $variantModel = new Variante();
         $whereBarcode = [new DataBaseWhere('codbarras', $formData['fastli'])];
         foreach ($variantModel->all($whereBarcode) as $variante) {
             return $model->getNewProductLine($variante->referencia);
         }
 
-        // buscamos el código de barras con los mods
-        foreach (self::$mods as $mod) {
-            $line = $mod->getFastLine($model, $formData);
-            if ($line) {
-                return $line;
-            }
-        }
-
-        Tools::log()->warning('product-not-found', ['%ref%' => $formData['fastli']]);
+        ToolBox::i18nLog()->warning('product-not-found', ['%ref%' => $formData['fastli']]);
         return null;
     }
 
@@ -418,12 +409,12 @@ class SalesLineHTML
             . '</div>';
     }
 
-    private static function renderNewModalFields(Translator $i18n, string $idlinea, SalesDocumentLine $line, SalesDocument $model): string
+    private static function renderNewFields(Translator $i18n, string $idlinea, SalesDocumentLine $line, SalesDocument $model): string
     {
         // cargamos los nuevos campos
         $newFields = [];
         foreach (self::$mods as $mod) {
-            foreach ($mod->newModalFields() as $field) {
+            foreach ($mod->newFields() as $field) {
                 if (false === in_array($field, $newFields)) {
                     $newFields[] = $field;
                 }
@@ -444,12 +435,12 @@ class SalesLineHTML
         return $html;
     }
 
-    private static function renderNewFields(Translator $i18n, string $idlinea, SalesDocumentLine $line, SalesDocument $model): string
+    private static function renderNewModalFields(Translator $i18n, string $idlinea, SalesDocumentLine $line, SalesDocument $model): string
     {
         // cargamos los nuevos campos
         $newFields = [];
         foreach (self::$mods as $mod) {
-            foreach ($mod->newFields() as $field) {
+            foreach ($mod->newModalFields() as $field) {
                 if (false === in_array($field, $newFields)) {
                     $newFields[] = $field;
                 }

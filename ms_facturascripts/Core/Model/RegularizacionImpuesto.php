@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FacturaScripts
- * Copyright (C) 2014-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2014-2022 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -21,7 +21,6 @@ namespace FacturaScripts\Core\Model;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
 use FacturaScripts\Core\DataSrc\Ejercicios;
-use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Lib\Accounting\AccountingAccounts;
 use FacturaScripts\Dinamic\Model\Asiento as DinAsiento;
 use FacturaScripts\Dinamic\Model\Ejercicio as DinEjercicio;
@@ -138,12 +137,12 @@ class RegularizacionImpuesto extends Base\ModelClass
             $this->idempresa = $this->getExercise()->idempresa;
         } elseif ($this->idempresa != $this->getExercise()->idempresa) {
             // no comparar tipos, ya que idempresa, al venir del formulario puede venir como string
-            Tools::log()->warning('exercise-company-mismatch');
+            $this->toolBox()->i18nLog()->warning('exercise-company-mismatch');
             return false;
         }
 
         if ($this->getExercise()->isOpened() === false) {
-            Tools::log()->warning('closed-exercise', ['%exerciseName%' => $this->codejercicio]);
+            $this->toolBox()->i18nLog()->warning('closed-exercise', ['%exerciseName%' => $this->codejercicio]);
             return false;
         }
 

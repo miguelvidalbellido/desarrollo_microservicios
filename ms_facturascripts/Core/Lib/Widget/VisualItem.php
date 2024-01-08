@@ -19,7 +19,7 @@
 
 namespace FacturaScripts\Core\Lib\Widget;
 
-use FacturaScripts\Core\Translator;
+use FacturaScripts\Core\Base\Translator;
 
 /**
  * Description of VisualItem
@@ -36,7 +36,6 @@ class VisualItem
 
     /**
      * @var Translator
-     * @deprecated since version 2023.1
      */
     protected static $i18n;
 

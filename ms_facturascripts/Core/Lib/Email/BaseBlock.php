@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FacturaScripts
- * Copyright (C) 2019-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -16,29 +16,29 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
 namespace FacturaScripts\Core\Lib\Email;
 
 /**
  * Description of BaseBlock
  *
- * @author Carlos Garcia Gomez      <carlos@facturascripts.com>
- * @author Daniel Fernández Giménez <hola@danielfg.es>
+ * @author Carlos Garcia Gomez <carlos@facturascripts.com>
  */
 abstract class BaseBlock
 {
-    /** @var string */
-    protected $css;
 
-    /** @var string */
-    protected $style;
-
-    /** @var string */
+    /**
+     *
+     * @var string
+     */
     protected $verificode;
 
     abstract public function render(): string;
 
-    public function setVerificode(string $code): void
+    /**
+     * 
+     * @param string $code
+     */
+    public function setVerificode(string $code)
     {
         $this->verificode = $code;
     }

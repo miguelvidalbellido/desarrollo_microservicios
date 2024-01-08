@@ -154,7 +154,7 @@ class Contacto extends Base\Contact
     {
         $results = [];
         $field = empty($fieldCode) ? $this->primaryColumn() : $fieldCode;
-        $fields = 'apellidos|cifnif|descripcion|email|empresa|nombre|observaciones|telefono1|telefono2';
+        $fields = 'apellidos|cifnif|descripcion|email|empresa|idcontacto|nombre|observaciones|telefono1|telefono2';
         $where[] = new DataBaseWhere($fields, mb_strtolower($query, 'UTF8'), 'LIKE');
         foreach ($this->all($where) as $item) {
             $results[] = new CodeModel(['code' => $item->{$field}, 'description' => $item->fullName()]);
@@ -167,10 +167,10 @@ class Contacto extends Base\Contact
         $country = new DinPais();
         $where = [new DataBaseWhere('codiso', $this->codpais)];
         if ($country->loadFromCode($this->codpais) || $country->loadFromCode('', $where)) {
-            return Tools::fixHtml($country->nombre) ?? '';
+            return Tools::fixHtml($country->nombre);
         }
 
-        return $this->codpais ?? '';
+        return $this->codpais;
     }
 
     /**
@@ -264,7 +264,7 @@ class Contacto extends Base\Contact
      */
     public function newLogkey($ipAddress): string
     {
-        $this->lastactivity = Tools::dateTime();
+        $this->lastactivity = date(self::DATETIME_STYLE);
         $this->lastip = $ipAddress;
         $this->logkey = Tools::randomString(99);
         return $this->logkey;

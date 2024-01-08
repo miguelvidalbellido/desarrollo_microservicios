@@ -19,6 +19,7 @@
 
 namespace FacturaScripts\Core\Controller;
 
+use FacturaScripts\Core\App\AppSettings;
 use FacturaScripts\Core\Base\Controller;
 use FacturaScripts\Core\Base\ControllerPermissions;
 use FacturaScripts\Core\Base\FileManager;
@@ -30,7 +31,6 @@ use FacturaScripts\Core\Internal\Forja;
 use FacturaScripts\Core\Internal\Plugin;
 use FacturaScripts\Core\Kernel;
 use FacturaScripts\Core\Plugins;
-use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\User;
 use Symfony\Component\HttpFoundation\Response;
 use ZipArchive;
@@ -76,15 +76,14 @@ class Updater extends Controller
     public function privateCore(&$response, $user, $permissions)
     {
         parent::privateCore($response, $user, $permissions);
-
         $this->telemetryManager = new TelemetryManager();
 
         // Folders writable?
         $folders = FileManager::notWritableFolders();
         if ($folders) {
-            Tools::log()->warning('folder-not-writable');
+            $this->toolBox()->i18nLog()->warning('folder-not-writable');
             foreach ($folders as $folder) {
-                Tools::log()->warning($folder);
+                $this->toolBox()->log()->warning($folder);
             }
             return;
         }
@@ -96,22 +95,22 @@ class Updater extends Controller
     /**
      * Remove downloaded file.
      */
-    private function cancelAction(): void
+    private function cancelAction()
     {
         $fileName = 'update-' . $this->request->get('item', '') . '.zip';
-        if (file_exists(Tools::folder($fileName))) {
-            unlink(Tools::folder($fileName));
-            Tools::log()->notice('record-deleted-correctly');
+        if (file_exists(FS_FOLDER . DIRECTORY_SEPARATOR . $fileName)) {
+            unlink(FS_FOLDER . DIRECTORY_SEPARATOR . $fileName);
+            $this->toolBox()->i18nLog()->notice('record-deleted-correctly');
         }
 
-        Tools::log()->notice('reloading');
+        $this->toolBox()->i18nLog()->notice('reloading');
         $this->redirect($this->getClassName() . '?action=post-update', 3);
     }
 
     /**
      * Download selected update.
      */
-    private function downloadAction(): void
+    private function downloadAction()
     {
         $idItem = $this->request->get('item', '');
         $this->updaterItems = $this->getUpdateItems();
@@ -120,19 +119,19 @@ class Updater extends Controller
                 continue;
             }
 
-            if (file_exists(Tools::folder($item['filename']))) {
-                unlink(Tools::folder($item['filename']));
+            if (file_exists(FS_FOLDER . DIRECTORY_SEPARATOR . $item['filename'])) {
+                unlink(FS_FOLDER . DIRECTORY_SEPARATOR . $item['filename']);
             }
 
             $url = $this->telemetryManager->signUrl($item['url']);
             $http = Http::get($url);
-            if ($http->saveAs(Tools::folder($item['filename']))) {
-                Tools::log()->notice('download-completed');
+            if ($http->saveAs(FS_FOLDER . DIRECTORY_SEPARATOR . $item['filename'])) {
+                $this->toolBox()->i18nLog()->notice('download-completed');
                 $this->updaterItems[$key]['downloaded'] = true;
                 break;
             }
 
-            Tools::log()->error('download-error', [
+            $this->toolBox()->i18nLog()->error('download-error', [
                 '%body%' => $http->body(),
                 '%error%' => $http->errorMessage(),
                 '%status%' => $http->status(),
@@ -146,7 +145,12 @@ class Updater extends Controller
         }
     }
 
-    protected function execAction(string $action): void
+    /**
+     * Execute selected action.
+     *
+     * @param string $action
+     */
+    protected function execAction(string $action)
     {
         switch ($action) {
             case 'cancel':
@@ -167,19 +171,19 @@ class Updater extends Controller
 
             case 'register':
                 if ($this->telemetryManager->install()) {
-                    Tools::log()->notice('record-updated-correctly');
+                    $this->toolBox()->i18nLog()->notice('record-updated-correctly');
                     break;
                 }
-                Tools::log()->error('record-save-error');
+                $this->toolBox()->i18nLog()->error('record-save-error');
                 break;
 
             case 'unlink':
                 if ($this->telemetryManager->unlink()) {
                     $this->telemetryManager = new TelemetryManager();
-                    Tools::log()->notice('unlink-install-ok');
+                    $this->toolBox()->i18nLog()->notice('unlink-install-ok');
                     break;
                 }
-                Tools::log()->error('unlink-install-ko');
+                $this->toolBox()->i18nLog()->error('unlink-install-ko');
                 break;
 
             case 'update':
@@ -223,8 +227,8 @@ class Updater extends Controller
             }
 
             $item = [
-                'description' => Tools::lang()->trans('core-update', ['%version%' => $build['version']]),
-                'downloaded' => file_exists(Tools::folder($fileName)),
+                'description' => $this->toolBox()->i18n()->trans('core-update', ['%version%' => $build['version']]),
+                'downloaded' => file_exists(FS_FOLDER . DIRECTORY_SEPARATOR . $fileName),
                 'filename' => $fileName,
                 'id' => Forja::CORE_PROJECT_ID,
                 'name' => 'CORE',
@@ -239,7 +243,7 @@ class Updater extends Controller
                 return $item;
             }
 
-            if ($build['beta'] && Tools::settings('default', 'enableupdatesbeta', false)) {
+            if ($build['beta'] && AppSettings::get('default', 'enableupdatesbeta', false)) {
                 return $item;
             }
         }
@@ -257,11 +261,11 @@ class Updater extends Controller
             }
 
             $item = [
-                'description' => Tools::lang()->trans('plugin-update', [
+                'description' => $this->toolBox()->i18n()->trans('plugin-update', [
                     '%pluginName%' => $plugin->name,
                     '%version%' => $build['version']
                 ]),
-                'downloaded' => file_exists(Tools::folder($fileName)),
+                'downloaded' => file_exists(FS_FOLDER . DIRECTORY_SEPARATOR . $fileName),
                 'filename' => $fileName,
                 'id' => $id,
                 'name' => $plugin->name,
@@ -276,7 +280,7 @@ class Updater extends Controller
                 return $item;
             }
 
-            if ($build['beta'] && Tools::settings('default', 'enableupdatesbeta', false)) {
+            if ($build['beta'] && AppSettings::get('default', 'enableupdatesbeta', false)) {
                 return $item;
             }
         }
@@ -284,7 +288,7 @@ class Updater extends Controller
         return [];
     }
 
-    private function postUpdateAction(): void
+    private function postUpdateAction()
     {
         $plugName = $this->request->get('init', '');
         if ($plugName) {
@@ -296,7 +300,7 @@ class Updater extends Controller
         Plugins::deploy(true, true);
     }
 
-    private function setCoreWarnings(): void
+    private function setCoreWarnings()
     {
         // comprobamos si hay actualización del core
         $newCore = 0;
@@ -324,31 +328,27 @@ class Updater extends Controller
 
             // ¿Hay actualización para el nuevo core?
             if ($plugin->forja('maxcore', 0) >= $newCore) {
-                $this->coreUpdateWarnings[$plugin->name] = Tools::lang()->trans('plugin-need-update', [
-                    '%plugin%' => $plugin->name
-                ]);
+                $this->coreUpdateWarnings[$plugin->name] = self::toolBox()::i18n()->trans('plugin-need-update', ['%plugin%' => $plugin->name]);
                 continue;
             }
 
-            $this->coreUpdateWarnings[$plugin->name] = Tools::lang()->trans('plugin-need-update-but', [
-                '%plugin%' => $plugin->name
-            ]);
+            $this->coreUpdateWarnings[$plugin->name] = self::toolBox()::i18n()->trans('plugin-need-update-but', ['%plugin%' => $plugin->name]);
         }
     }
 
     /**
      * Extract zip file and update all files.
      */
-    private function updateAction(): void
+    private function updateAction()
     {
         $idItem = $this->request->get('item', '');
         $fileName = 'update-' . $idItem . '.zip';
 
         // open the zip file
         $zip = new ZipArchive();
-        $zipStatus = $zip->open(Tools::folder($fileName), ZipArchive::CHECKCONS);
+        $zipStatus = $zip->open(FS_FOLDER . DIRECTORY_SEPARATOR . $fileName, ZipArchive::CHECKCONS);
         if ($zipStatus !== true) {
-            Tools::log()->critical('ZIP ERROR: ' . $zipStatus);
+            $this->toolBox()->log()->critical('ZIP ERROR: ' . $zipStatus);
             return;
         }
 
@@ -366,14 +366,11 @@ class Updater extends Controller
         }
 
         // extract core/plugin zip file
-        $done = ($idItem == Forja::CORE_PROJECT_ID) ?
-            $this->updateCore($zip, $fileName) :
-            $this->updatePlugin($zip, $fileName);
-
+        $done = ($idItem == Forja::CORE_PROJECT_ID) ? $this->updateCore($zip, $fileName) : $this->updatePlugin($zip, $fileName);
         if ($done) {
             Plugins::deploy(true, false);
             Cache::clear();
-            $this->setTemplate(false);
+            $this->toolBox()->i18nLog()->notice('reloading');
             $this->redirect($this->getClassName() . '?action=post-update&init=' . $init, 3);
         }
     }
@@ -382,38 +379,38 @@ class Updater extends Controller
     {
         // extract zip content
         if (false === $zip->extractTo(FS_FOLDER)) {
-            Tools::log()->critical('ZIP EXTRACT ERROR: ' . $fileName);
+            $this->toolBox()->log()->critical('ZIP EXTRACT ERROR: ' . $fileName);
             $zip->close();
             return false;
         }
 
         // remove zip file
         $zip->close();
-        unlink(Tools::folder($fileName));
+        unlink(FS_FOLDER . DIRECTORY_SEPARATOR . $fileName);
 
         // update folders
         foreach (['Core', 'node_modules', 'vendor'] as $folder) {
-            $origin = Tools::folder(self::CORE_ZIP_FOLDER, $folder);
-            $dest = Tools::folder($folder);
+            $origin = FS_FOLDER . DIRECTORY_SEPARATOR . self::CORE_ZIP_FOLDER . DIRECTORY_SEPARATOR . $folder;
+            $dest = FS_FOLDER . DIRECTORY_SEPARATOR . $folder;
             if (false === file_exists($origin)) {
-                Tools::log()->critical('COPY ERROR: ' . $origin);
+                $this->toolBox()->log()->critical('COPY ERROR: ' . $origin);
                 return false;
             }
 
             FileManager::delTree($dest);
             if (false === FileManager::recurseCopy($origin, $dest)) {
-                Tools::log()->critical('COPY ERROR2: ' . $origin);
+                $this->toolBox()->log()->critical('COPY ERROR2: ' . $origin);
                 return false;
             }
         }
 
         // update files
-        $origin = Tools::folder(self::CORE_ZIP_FOLDER, 'index.php');
-        $dest = Tools::folder('index.php');
+        $origin = FS_FOLDER . DIRECTORY_SEPARATOR . self::CORE_ZIP_FOLDER . DIRECTORY_SEPARATOR . 'index.php';
+        $dest = FS_FOLDER . DIRECTORY_SEPARATOR . 'index.php';
         copy($origin, $dest);
 
         // remove zip folder
-        FileManager::delTree(Tools::folder(self::CORE_ZIP_FOLDER));
+        FileManager::delTree(FS_FOLDER . DIRECTORY_SEPARATOR . self::CORE_ZIP_FOLDER);
         return true;
     }
 
@@ -425,7 +422,7 @@ class Updater extends Controller
         $return = Plugins::add($fileName, 'plugin.zip', true);
 
         // remove zip file
-        unlink(Tools::folder($fileName));
+        unlink(FS_FOLDER . DIRECTORY_SEPARATOR . $fileName);
         return $return;
     }
 

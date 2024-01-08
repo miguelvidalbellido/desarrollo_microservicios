@@ -22,7 +22,6 @@ namespace FacturaScripts\Core\Model\Base;
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
 use FacturaScripts\Core\Model\Proveedor as CoreProveedor;
 use FacturaScripts\Core\Model\User;
-use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\ProductoProveedor;
 use FacturaScripts\Dinamic\Model\Proveedor;
 use FacturaScripts\Dinamic\Model\Variante;
@@ -62,7 +61,7 @@ abstract class PurchaseDocument extends TransformerDocument
         parent::clear();
 
         // select default currency
-        $coddivisa = Tools::settings('default', 'coddivisa');
+        $coddivisa = $this->toolBox()->appSettings()->get('default', 'coddivisa');
         $this->setCurrency($coddivisa, true);
     }
 
@@ -83,8 +82,8 @@ abstract class PurchaseDocument extends TransformerDocument
         }
 
         $variant = new Variante();
-        $where1 = [new DataBaseWhere('referencia', Tools::noHtml($reference))];
-        $where2 = [new DataBaseWhere('codbarras', Tools::noHtml($reference))];
+        $where1 = [new DataBaseWhere('referencia', $this->toolBox()->utils()->noHtml($reference))];
+        $where2 = [new DataBaseWhere('codbarras', $this->toolBox()->utils()->noHtml($reference))];
         if ($variant->loadFromCode('', $where1) || $variant->loadFromCode('', $where2)) {
             $product = $variant->getProducto();
 
@@ -193,8 +192,9 @@ abstract class PurchaseDocument extends TransformerDocument
      */
     public function test()
     {
-        $this->nombre = Tools::noHtml($this->nombre);
-        $this->numproveedor = Tools::noHtml($this->numproveedor);
+        $utils = $this->toolBox()->utils();
+        $this->nombre = $utils->noHtml($this->nombre);
+        $this->numproveedor = $utils->noHtml($this->numproveedor);
 
         return parent::test();
     }

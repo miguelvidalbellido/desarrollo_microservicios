@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FacturaScripts
- * Copyright (C) 2013-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2013-2022 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -20,9 +20,6 @@
 namespace FacturaScripts\Core\Model;
 
 use FacturaScripts\Core\DataSrc\FormasPago;
-use FacturaScripts\Core\Model\Base\ModelClass;
-use FacturaScripts\Core\Model\Base\ModelTrait;
-use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\CuentaBanco as DinCuentaBanco;
 
 /**
@@ -30,35 +27,68 @@ use FacturaScripts\Dinamic\Model\CuentaBanco as DinCuentaBanco;
  *
  * @author Carlos García Gómez <carlos@facturascripts.com>
  */
-class FormaPago extends ModelClass
+class FormaPago extends Base\ModelClass
 {
-    use ModelTrait;
 
-    /** @var string */
+    use Base\ModelTrait;
+
+    /**
+     * Bank account identifier.
+     *
+     * @var string
+     */
     public $codcuentabanco;
 
-    /** @var string */
+    /**
+     * Primary key. Varchar (10).
+     *
+     * @var string
+     */
     public $codpago;
 
-    /** @var string */
+    /**
+     * Description of the payment method.
+     *
+     * @var string
+     */
     public $descripcion;
 
-    /** @var bool */
+    /**
+     * To indicate if it is necessary to show the bank account of the client.
+     *
+     * @var bool
+     */
     public $domiciliado;
 
-    /** @var int */
+    /**
+     * Company identifier.
+     *
+     * @var int
+     */
     public $idempresa;
 
     /** @var bool */
     public $imprimir;
 
-    /** @var bool */
+    /**
+     * Indicate if pay or not
+     *
+     * @var bool
+     */
     public $pagado;
 
-    /** @var int */
+    /**
+     * Expiration period.
+     *
+     * @var int
+     */
     public $plazovencimiento;
 
-    /** @var string */
+    /**
+     * Type of expiration. varchar(10)
+     *
+     * @var string
+     */
     public $tipovencimiento;
 
     public function clear()
@@ -73,17 +103,17 @@ class FormaPago extends ModelClass
     public function delete(): bool
     {
         if ($this->isDefault()) {
-            Tools::log()->warning('cant-delete-default-payment-method');
+            $this->toolBox()->i18nLog()->warning('cant-delete-default-payment-method');
             return false;
         }
 
-        if (false === parent::delete()) {
-            return false;
+        if (parent::delete()) {
+            // limpiamos la caché
+            FormasPago::clear();
+            return true;
         }
 
-        // limpiamos la caché
-        FormasPago::clear();
-        return true;
+        return false;
     }
 
     /**
@@ -91,21 +121,11 @@ class FormaPago extends ModelClass
      *
      * @return DinCuentaBanco
      */
-    public function getBankAccount(): CuentaBanco
+    public function getBankAccount()
     {
         $bank = new DinCuentaBanco();
         $bank->loadFromCode($this->codcuentabanco);
         return $bank;
-    }
-
-    public function getSubcuenta(string $codejercicio, bool $create): Subcuenta
-    {
-        return $this->getBankAccount()->getSubcuenta($codejercicio, $create);
-    }
-
-    public function getSubcuentaGastos(string $codejercicio, bool $create): Subcuenta
-    {
-        return $this->getBankAccount()->getSubcuentaGastos($codejercicio, $create);
     }
 
     /**
@@ -117,7 +137,7 @@ class FormaPago extends ModelClass
      */
     public function getExpiration(string $date): string
     {
-        return Tools::date($date . ' +' . $this->plazovencimiento . ' ' . $this->tipovencimiento);
+        return date(self::DATE_STYLE, strtotime($date . ' +' . $this->plazovencimiento . ' ' . $this->tipovencimiento));
     }
 
     public function install(): string
@@ -135,7 +155,7 @@ class FormaPago extends ModelClass
      */
     public function isDefault(): bool
     {
-        return $this->codpago === Tools::settings('default', 'codpago');
+        return $this->codpago === $this->toolBox()->appSettings()->get('default', 'codpago');
     }
 
     public static function primaryColumn(): string
@@ -145,13 +165,13 @@ class FormaPago extends ModelClass
 
     public function save(): bool
     {
-        if (false === parent::save()) {
-            return false;
+        if (parent::save()) {
+            // limpiamos la caché
+            FormasPago::clear();
+            return true;
         }
 
-        // limpiamos la caché
-        FormasPago::clear();
-        return true;
+        return false;
     }
 
     public static function tableName(): string
@@ -161,22 +181,22 @@ class FormaPago extends ModelClass
 
     public function test(): bool
     {
-        $this->codpago = Tools::noHtml($this->codpago);
-        $this->descripcion = Tools::noHtml($this->descripcion);
+        $this->codpago = $this->toolBox()->utils()->noHtml($this->codpago);
+        $this->descripcion = $this->toolBox()->utils()->noHtml($this->descripcion);
 
         if ($this->codpago && 1 !== preg_match('/^[A-Z0-9_\+\.\-\s]{1,10}$/i', $this->codpago)) {
-            Tools::log()->error(
+            $this->toolBox()->i18nLog()->error(
                 'invalid-alphanumeric-code',
                 ['%value%' => $this->codpago, '%column%' => 'codpago', '%min%' => '1', '%max%' => '10']
             );
             return false;
         } elseif ($this->plazovencimiento < 0) {
-            Tools::log()->warning('number-expiration-invalid');
+            $this->toolBox()->i18nLog()->warning('number-expiration-invalid');
             return false;
         }
 
         if (empty($this->idempresa)) {
-            $this->idempresa = Tools::settings('default', 'idempresa');
+            $this->idempresa = $this->toolBox()->appSettings()->get('default', 'idempresa');
         }
 
         return parent::test();

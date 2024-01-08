@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FacturaScripts
- * Copyright (C) 2018-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2018-2022 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -22,7 +22,7 @@ namespace FacturaScripts\Core\Lib\Accounting;
 use Exception;
 use FacturaScripts\Core\Base\DataBase;
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
-use FacturaScripts\Core\Tools;
+use FacturaScripts\Core\Base\ToolBox;
 use FacturaScripts\Dinamic\Lib\Import\CSVImport;
 use FacturaScripts\Dinamic\Model\Cuenta;
 use FacturaScripts\Dinamic\Model\CuentaEspecial;
@@ -40,6 +40,7 @@ use SimpleXMLElement;
  */
 class AccountingPlanImport
 {
+
     /**
      * @var DataBase
      */
@@ -64,12 +65,12 @@ class AccountingPlanImport
     public function importCSV(string $filePath, string $codejercicio): bool
     {
         if (false === $this->exercise->loadFromCode($codejercicio)) {
-            Tools::log()->error('exercise-not-found');
+            $this->toolBox()->i18nLog()->error('exercise-not-found');
             return false;
         }
 
         if (false === file_exists($filePath)) {
-            Tools::log()->warning('file-not-found', ['%fileName%' => $filePath]);
+            $this->toolBox()->i18nLog()->warning('file-not-found', ['%fileName%' => $filePath]);
             return false;
         }
 
@@ -86,7 +87,7 @@ class AccountingPlanImport
             return true;
         } catch (Exception $exp) {
             $this->dataBase->rollback();
-            Tools::log()->error($exp->getLine() . ' -> ' . $exp->getMessage());
+            $this->toolBox()->log()->error($exp->getLine() . ' -> ' . $exp->getMessage());
             return false;
         }
     }
@@ -97,7 +98,7 @@ class AccountingPlanImport
     public function importXML(string $filePath, string $codejercicio): bool
     {
         if (false === $this->exercise->loadFromCode($codejercicio)) {
-            Tools::log()->error('exercise-not-found');
+            $this->toolBox()->i18nLog()->error('exercise-not-found');
             return false;
         }
 
@@ -131,7 +132,7 @@ class AccountingPlanImport
             return true;
         } catch (Exception $exp) {
             $this->dataBase->rollback();
-            Tools::log()->error($exp->getLine() . ' -> ' . $exp->getMessage());
+            $this->toolBox()->log()->error($exp->getLine() . ' -> ' . $exp->getMessage());
             return false;
         }
     }
@@ -139,7 +140,7 @@ class AccountingPlanImport
     /**
      * Insert/update and account in accounting plan.
      */
-    protected function createAccount(string $code, string $definition, ?string $parentCode = '', ?string $codcuentaesp = ''): bool
+    protected function createAccount(string $code, string $definition, string $parentCode = '', string $codcuentaesp = ''): bool
     {
         // the account exists?
         $account = new Cuenta();
@@ -162,7 +163,7 @@ class AccountingPlanImport
     /**
      * Insert or update an account in accounting Plan.
      */
-    protected function createSubaccount(string $code, string $description, string $parentCode, ?string $codcuentaesp = ''): bool
+    protected function createSubaccount(string $code, string $description, string $parentCode, string $codcuentaesp = ''): bool
     {
         // the subaccount exists?
         $subaccount = new Subcuenta();
@@ -331,6 +332,11 @@ class AccountingPlanImport
         }
 
         return $parentCode;
+    }
+
+    protected function toolBox(): ToolBox
+    {
+        return new ToolBox();
     }
 
     /**

@@ -1,4 +1,4 @@
-codserie;descripcion;tipo;siniva
-"A";"General";;false
-"R";"Rectificativas";"R";false
-"S";"Simplificadas";"S";false
+codserie;descripcion;siniva
+"A";"General";false
+"R";"Rectificativas";false
+"S";"Simplificadas";false

@@ -35,12 +35,11 @@ function listViewDelete(viewName) {
         closeButton: false,
         buttons: {
             cancel: {
-                label: '<i class="fas fa-times"></i> ' + listViewDeleteCancel,
-                className: "btn-spin-action btn-secondary"
+                label: '<i class="fas fa-times"></i> ' + listViewDeleteCancel
             },
             confirm: {
                 label: '<i class="fas fa-check"></i> ' + listViewDeleteConfirm,
-                className: "btn-spin-action btn-danger"
+                className: "btn-danger"
             }
         },
         callback: function (result) {
@@ -73,7 +72,6 @@ function listViewPrintAction(viewName, option) {
     $("#form" + viewName).submit();
     $("#form" + viewName + " :input[name=\"action\"]").val('');
     $("#form" + viewName).attr("target", "");
-    animateSpinner('remove');
 }
 
 function listViewSetAction(viewName, value) {

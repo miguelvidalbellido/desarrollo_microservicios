@@ -20,9 +20,9 @@
 namespace FacturaScripts\Core\Base\AjaxForms;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
+use FacturaScripts\Core\Base\Translator;
 use FacturaScripts\Core\DataSrc\Empresas;
 use FacturaScripts\Core\Lib\CodePatterns;
-use FacturaScripts\Core\Translator;
 use FacturaScripts\Dinamic\Model\Asiento;
 use FacturaScripts\Dinamic\Model\ConceptoPartida;
 use FacturaScripts\Dinamic\Model\Diario;
@@ -188,11 +188,9 @@ class AccountingHeaderHTML
             return '<input type="hidden" name="idempresa" value=' . $model->idempresa . ' />';
         }
 
-        $attributes = $model->primaryColumnValue() ? 'readonly' : 'required';
-
         return '<div class="col-sm-3 col-md-2">'
             . '<div class="form-group">' . $i18n->trans('company')
-            . '<select name="idempresa" class="form-control" ' . $attributes . '>'
+            . '<select name="idempresa" class="form-control" required>'
             . static::getItems($companyList, 'idempresa', 'nombre', $model->idempresa)
             . '</select>'
             . '</div>'

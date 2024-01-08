@@ -20,7 +20,6 @@
 namespace FacturaScripts\Core\Model\Base;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
-use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\Impuesto;
 use FacturaScripts\Dinamic\Model\Producto;
 use FacturaScripts\Dinamic\Model\Stock;
@@ -185,17 +184,17 @@ abstract class BusinessDocumentLine extends ModelOnChangeClass
         $this->suplido = false;
 
         // default tax
-        $this->codimpuesto = Tools::settings('default', 'codimpuesto');
+        $this->codimpuesto = $this->toolBox()->appSettings()->get('default', 'codimpuesto');
         $this->iva = $this->getTax()->iva;
         $this->recargo = $this->getTax()->recargo;
     }
 
-    public function disableUpdateStock(bool $value): void
+    public function disableUpdateStock(bool $value)
     {
         $this->disableUpdateStock = $value;
     }
 
-    public function disableUpdateTotals(bool $value): void
+    public function disableUpdateTotals(bool $value)
     {
         $this->disableUpdateTotals = $value;
     }
@@ -301,9 +300,9 @@ abstract class BusinessDocumentLine extends ModelOnChangeClass
             $this->pvptotal = $this->pvpsindto * $this->getEUDiscount();
         }
 
-        $this->descripcion = Tools::noHtml($this->descripcion);
-        $this->referencia = Tools::noHtml($this->referencia);
-
+        $utils = $this->toolBox()->utils();
+        $this->descripcion = $utils->noHtml($this->descripcion);
+        $this->referencia = $utils->noHtml($this->referencia);
         return parent::test();
     }
 
@@ -497,7 +496,7 @@ abstract class BusinessDocumentLine extends ModelOnChangeClass
 
         // enough stock?
         if (false === $producto->ventasinstock && $this->actualizastock === -1 && $stock->cantidad < 0) {
-            Tools::log()->warning('not-enough-stock', ['%reference%' => $this->referencia]);
+            $this->toolBox()->i18nLog()->warning('not-enough-stock', ['%reference%' => $this->referencia]);
             return false;
         }
 

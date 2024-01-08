@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FacturaScripts
- * Copyright (C) 2019-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2020 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -18,8 +18,6 @@
  */
 namespace FacturaScripts\Core\Model\Base;
 
-use FacturaScripts\Core\Tools;
-
 /**
  * Description of InvoiceTrait
  *
@@ -27,6 +25,7 @@ use FacturaScripts\Core\Tools;
  */
 trait PasswordTrait
 {
+
     /**
      * New password.
      *
@@ -50,8 +49,10 @@ trait PasswordTrait
 
     abstract public function primaryColumnValue();
 
+    abstract protected static function toolBox();
+
     /**
-     * Assigns the new password to the user.
+     * Asigns the new password to the user.
      *
      * @param string $value
      */
@@ -88,7 +89,7 @@ trait PasswordTrait
     {
         if (isset($this->newPassword, $this->newPassword2) && $this->newPassword !== '' && $this->newPassword2 !== '') {
             if ($this->newPassword !== $this->newPassword2) {
-                Tools::log()->warning('different-passwords', ['%userNick%' => $this->primaryColumnValue()]);
+                $this->toolBox()->i18nLog()->warning('different-passwords', ['%userNick%' => $this->primaryColumnValue()]);
                 return false;
             }
 

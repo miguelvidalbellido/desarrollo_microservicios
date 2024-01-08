@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FacturaScripts
- * Copyright (C) 2013-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2013-2022 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -20,7 +20,6 @@
 namespace FacturaScripts\Core\Model;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
-use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\Cuenta as DinCuenta;
 use FacturaScripts\Dinamic\Model\CuentaEspecial as DinCuentaEspecial;
 use FacturaScripts\Dinamic\Model\Partida as DinPartida;
@@ -33,6 +32,7 @@ use FacturaScripts\Dinamic\Model\Partida as DinPartida;
  */
 class Subcuenta extends Base\ModelClass
 {
+
     use Base\ModelTrait;
     use Base\ExerciseRelationTrait;
 
@@ -118,7 +118,7 @@ class Subcuenta extends Base\ModelClass
             return parent::delete();
         }
 
-        Tools::log()->warning('closed-exercise', ['%exerciseName%' => $this->getExercise()->nombre]);
+        $this->toolBox()->i18nLog()->warning('closed-exercise', ['%exerciseName%' => $this->getExercise()->nombre]);
         return false;
     }
 
@@ -192,7 +192,7 @@ class Subcuenta extends Base\ModelClass
             return parent::save();
         }
 
-        Tools::log()->warning('closed-exercise', ['%exerciseName%' => $this->getExercise()->nombre]);
+        $this->toolBox()->i18nLog()->warning('closed-exercise', ['%exerciseName%' => $this->getExercise()->nombre]);
         return false;
     }
 
@@ -207,13 +207,13 @@ class Subcuenta extends Base\ModelClass
 
         // escape html
         foreach (['codcuenta', 'codsubcuenta', 'descripcion', 'codcuentaesp'] as $field) {
-            $this->{$field} = Tools::noHtml($this->{$field});
+            $this->{$field} = self::toolBox()::utils()::noHtml($this->{$field});
         }
 
         $this->codsubcuenta = empty($this->idsubcuenta) ? $this->transformCodsubcuenta($this->codsubcuenta) : $this->codsubcuenta;
-        $this->descripcion = Tools::noHtml($this->descripcion);
+        $this->descripcion = $this->toolBox()->utils()->noHtml($this->descripcion);
         if (strlen($this->descripcion) < 1 || strlen($this->descripcion) > 255) {
-            Tools::log()->warning(
+            $this->toolBox()->i18nLog()->warning(
                 'invalid-column-lenght',
                 ['%column%' => 'descripcion', '%min%' => '1', '%max%' => '255']
             );
@@ -223,7 +223,7 @@ class Subcuenta extends Base\ModelClass
         // check exercise
         $exercise = $this->getExercise();
         if (false === $this->disableAdditionalTest && strlen($this->codsubcuenta) !== $exercise->longsubcuenta) {
-            Tools::log()->warning('account-length-error', ['%code%' => $this->codsubcuenta]);
+            $this->toolBox()->i18nLog()->warning('account-length-error', ['%code%' => $this->codsubcuenta]);
             return false;
         }
 

@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FacturaScripts
- * Copyright (C) 2013-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2013-2022 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,7 +19,6 @@
 
 namespace FacturaScripts\Core\Model\Base;
 
-use FacturaScripts\Core\Tools;
 use PHP_IBAN\IBAN;
 
 /**
@@ -31,6 +30,7 @@ use PHP_IBAN\IBAN;
  */
 abstract class BankAccount extends ModelClass
 {
+
     const GROUP_LENGTH = 4;
 
     /**
@@ -110,13 +110,14 @@ abstract class BankAccount extends ModelClass
     public function test()
     {
         if (!empty($this->codcuenta) && false === is_numeric($this->codcuenta)) {
-            Tools::log()->error('invalid-number', ['%number%' => $this->codcuenta]);
+            $this->toolBox()->i18nLog()->error('invalid-number', ['%number%' => $this->codcuenta]);
             return false;
         }
 
-        $this->descripcion = Tools::noHtml($this->descripcion);
-        $this->iban = Tools::noHtml($this->iban);
-        $this->swift = Tools::noHtml($this->swift);
+        $utils = $this->toolBox()->utils();
+        $this->descripcion = $utils->noHtml($this->descripcion);
+        $this->iban = $utils->noHtml($this->iban);
+        $this->swift = $utils->noHtml($this->swift);
 
         return parent::test() && $this->testBankAccount();
     }
@@ -130,7 +131,7 @@ abstract class BankAccount extends ModelClass
      */
     public function verifyIBAN(string $iban): bool
     {
-        if (Tools::settings('default', 'validate_iban', false)) {
+        if ($this->toolBox()->appSettings()->get('default', 'validate_iban', false)) {
             $object = new IBAN($iban);
             return $object->Verify();
         }
@@ -163,7 +164,7 @@ abstract class BankAccount extends ModelClass
             return true;
         }
 
-        Tools::log()->warning('invalid-iban', ['%iban%' => $this->iban]);
+        $this->toolBox()->i18nLog()->warning('invalid-iban', ['%iban%' => $this->iban]);
         return false;
     }
 }

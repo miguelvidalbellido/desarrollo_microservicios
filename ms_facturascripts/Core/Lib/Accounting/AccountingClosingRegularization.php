@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FacturaScripts
- * Copyright (C) 2018-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2018-2021 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -20,7 +20,6 @@
 namespace FacturaScripts\Core\Lib\Accounting;
 
 use FacturaScripts\Core\Model\Ejercicio;
-use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\Asiento;
 use FacturaScripts\Dinamic\Model\Partida;
 
@@ -32,6 +31,7 @@ use FacturaScripts\Dinamic\Model\Partida;
  */
 class AccountingClosingRegularization extends AccountingClosingBase
 {
+
     /**
      * Execute main process.
      * Create a new account entry for channel with a one line by account balance.
@@ -44,7 +44,7 @@ class AccountingClosingRegularization extends AccountingClosingBase
     public function exec($exercise, $idjournal): bool
     {
         if (!$this->loadSubAccount($exercise, AccountingAccounts::SPECIAL_PROFIT_LOSS_ACCOUNT)) {
-            Tools::log()->error('subaccount-pyg-not-found');
+            $this->toolBox()->i18nLog()->error('subaccount-pyg-not-found');
             return false;
         }
 
@@ -58,9 +58,10 @@ class AccountingClosingRegularization extends AccountingClosingBase
      */
     protected function getConcept(): string
     {
-        return Tools::lang()->trans('closing-regularization-concept', [
-            '%exercise%' => $this->exercise->nombre
-        ]);
+        return $this->toolBox()->i18n()->trans(
+            'closing-regularization-concept',
+            ['%exercise%' => $this->exercise->nombre]
+        );
     }
 
     /**

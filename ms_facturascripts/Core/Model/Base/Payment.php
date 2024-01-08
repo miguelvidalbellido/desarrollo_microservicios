@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FacturaScripts
- * Copyright (C) 2019-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2019-2022 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,7 +19,6 @@
 
 namespace FacturaScripts\Core\Model\Base;
 
-use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Lib\Accounting\PaymentToAccounting;
 use FacturaScripts\Dinamic\Model\Asiento;
 
@@ -30,6 +29,7 @@ use FacturaScripts\Dinamic\Model\Asiento;
  */
 abstract class Payment extends ModelClass
 {
+
     use PaymentRelationTrait;
     use AccEntryRelationTrait;
 
@@ -73,8 +73,8 @@ abstract class Payment extends ModelClass
     public function clear()
     {
         parent::clear();
-        $this->fecha = Tools::date();
-        $this->hora = Tools::hour();
+        $this->fecha = date(self::DATE_STYLE);
+        $this->hora = date(self::HOUR_STYLE);
         $this->importe = 0.0;
     }
 
@@ -84,14 +84,14 @@ abstract class Payment extends ModelClass
         $acEntry = $this->getAccountingEntry();
         $acEntry->editable = true;
         if ($acEntry->exists() && false === $acEntry->delete()) {
-            Tools::log()->warning('cant-remove-accounting-entry');
+            $this->toolBox()->i18nLog()->warning('cant-remove-accounting-entry');
             return false;
         }
 
         return parent::delete();
     }
 
-    public function disableAccountingGeneration(bool $value = true): void
+    public function disableAccountingGeneration(bool $value = true)
     {
         $this->disableAccountingGeneration = $value;
     }

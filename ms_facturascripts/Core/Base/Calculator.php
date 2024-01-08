@@ -68,11 +68,6 @@ final class Calculator
         $doc->totalrecargo = $subtotals['totalrecargo'];
         $doc->totalsuplidos = $subtotals['totalsuplidos'];
 
-        // si tiene totalbeneficio, lo asignamos
-        if (property_exists($doc, 'totalbeneficio')) {
-            $doc->totalbeneficio = $subtotals['totalbeneficio'];
-        }
-
         // si tiene totalcoste, lo asignamos
         if (property_exists($doc, 'totalcoste')) {
             $doc->totalcoste = $subtotals['totalcoste'];
@@ -192,9 +187,6 @@ final class Calculator
         $subtotals['totalrecargo'] = round($subtotals['totalrecargo'], FS_NF0);
         $subtotals['totalsuplidos'] = round($subtotals['totalsuplidos'], FS_NF0);
 
-        // calculamos el beneficio
-        $subtotals['totalbeneficio'] = round($subtotals['neto'] - $subtotals['totalcoste'], FS_NF0);
-
         // calculamos el total
         $subtotals['total'] = round($subtotals['neto'] + $subtotals['totalsuplidos'] + $subtotals['totaliva']
             + $subtotals['totalrecargo'] - $subtotals['totalirpf'], FS_NF0);
@@ -265,7 +257,8 @@ final class Calculator
             }
 
             // ¿El régimen IVA es sin recargo de equivalencia?
-            if ($regimen != RegimenIVA::TAX_SYSTEM_SURCHARGE) {
+            if ($regimen != RegimenIVA::TAX_SYSTEM_SURCHARGE
+                && $company->regimeniva != RegimenIVA::TAX_SYSTEM_SURCHARGE) {
                 $line->recargo = 0.0;
             }
         }

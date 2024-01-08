@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is part of FacturaScripts
- * Copyright (C) 2013-2023 Carlos Garcia Gomez <carlos@facturascripts.com>
+ * Copyright (C) 2013-2022 Carlos Garcia Gomez <carlos@facturascripts.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,8 +19,6 @@
 
 namespace FacturaScripts\Core\Model;
 
-use FacturaScripts\Core\Tools;
-
 /**
  * A fee for the products.
  *
@@ -28,6 +26,7 @@ use FacturaScripts\Core\Tools;
  */
 class Tarifa extends Base\ModelClass
 {
+
     use Base\ModelTrait;
 
     const APPLY_COST = 'coste';
@@ -148,15 +147,14 @@ class Tarifa extends Base\ModelClass
     {
         $this->codtarifa = trim($this->codtarifa);
         if ($this->codtarifa && 1 !== preg_match('/^[A-Z0-9_\+\.\-]{1,6}$/i', $this->codtarifa)) {
-            Tools::log()->error(
+            $this->toolBox()->i18nLog()->error(
                 'invalid-alphanumeric-code',
                 ['%value%' => $this->codtarifa, '%column%' => 'codtarifa', '%min%' => '1', '%max%' => '6']
             );
             return false;
         }
 
-        $this->nombre = Tools::noHtml($this->nombre);
-
+        $this->nombre = $this->toolBox()->utils()->noHtml($this->nombre);
         return parent::test();
     }
 

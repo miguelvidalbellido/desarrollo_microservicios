@@ -20,10 +20,10 @@
 namespace FacturaScripts\Core\Lib\ExtendedController;
 
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
+use FacturaScripts\Core\Base\ToolBox;
 use FacturaScripts\Core\Cache;
 use FacturaScripts\Core\Model\Base\BusinessDocument;
 use FacturaScripts\Core\Model\Base\ModelClass;
-use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Lib\AssetManager;
 use FacturaScripts\Dinamic\Lib\ExportManager;
 use FacturaScripts\Dinamic\Lib\Widget\ColumnItem;
@@ -59,7 +59,7 @@ class ListView extends BaseView
     /** @var array */
     public $totalAmounts = [];
 
-    public function addColor(string $fieldName, $value, string $color, string $title = ''): ListView
+    public function addColor(string $fieldName, $value, string $color, string $title = '')
     {
         if (false === isset($this->rows['status'])) {
             $this->rows['status'] = new RowStatus([]);
@@ -73,8 +73,6 @@ class ListView extends BaseView
             'text' => $value,
             'title' => $title
         ];
-
-        return $this;
     }
 
     /**
@@ -83,21 +81,20 @@ class ListView extends BaseView
      * @param array $fields
      * @param string $label
      * @param int $default (0 = None, 1 = ASC, 2 = DESC)
-     * @return ListView
      */
-    public function addOrderBy(array $fields, string $label, int $default = 0): ListView
+    public function addOrderBy(array $fields, string $label, int $default = 0)
     {
         $key1 = count($this->orderOptions);
         $this->orderOptions[$key1] = [
             'fields' => $fields,
-            'label' => Tools::lang()->trans($label),
+            'label' => ToolBox::i18n()->trans($label),
             'type' => 'ASC'
         ];
 
         $key2 = count($this->orderOptions);
         $this->orderOptions[$key2] = [
             'fields' => $fields,
-            'label' => Tools::lang()->trans($label),
+            'label' => ToolBox::i18n()->trans($label),
             'type' => 'DESC'
         ];
 
@@ -106,8 +103,6 @@ class ListView extends BaseView
         } elseif ($default === 1 || empty($this->order)) {
             $this->setSelectedOrderBy($key1);
         }
-
-        return $this;
     }
 
     /**
@@ -115,15 +110,12 @@ class ListView extends BaseView
      * To use integer columns, use CAST(columnName AS CHAR(50)).
      *
      * @param array $fields
-     * @return ListView
      */
-    public function addSearchFields(array $fields): ListView
+    public function addSearchFields(array $fields)
     {
         foreach ($fields as $field) {
             $this->searchFields[] = $field;
         }
-
-        return $this;
     }
 
     public function btnNewUrl(): string
@@ -280,7 +272,7 @@ class ListView extends BaseView
      */
     protected function assets()
     {
-        AssetManager::addJs(FS_ROUTE . '/Dinamic/Assets/JS/ListView.js?v=2');
+        AssetManager::add('js', FS_ROUTE . '/Dinamic/Assets/JS/ListView.js?v=2');
     }
 
     /**
@@ -307,7 +299,7 @@ class ListView extends BaseView
         return $sum;
     }
 
-    private function loadTotalAmounts(): void
+    private function loadTotalAmounts()
     {
         $tableName = count($this->cursor) > 1 && method_exists($this->model, 'tableName') ? $this->model->tableName() : '';
         if (empty($tableName)) {
@@ -349,7 +341,7 @@ class ListView extends BaseView
         $this->query = $request->request->get('query', '');
         if ('' !== $this->query) {
             $fields = implode('|', $this->searchFields);
-            $this->where[] = new DataBaseWhere($fields, Tools::noHtml($this->query), 'XLIKE');
+            $this->where[] = new DataBaseWhere($fields, ToolBox::utils()::noHtml($this->query), 'XLIKE');
         }
 
         // filtro guardado seleccionado?
@@ -392,7 +384,7 @@ class ListView extends BaseView
      *
      * @param string $orderKey
      */
-    protected function setSelectedOrderBy(string $orderKey): void
+    protected function setSelectedOrderBy(string $orderKey)
     {
         if (isset($this->orderOptions[$orderKey])) {
             $this->order = [];

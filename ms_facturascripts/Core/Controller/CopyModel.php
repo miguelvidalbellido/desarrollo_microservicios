@@ -23,9 +23,6 @@ use FacturaScripts\Core\Base\Calculator;
 use FacturaScripts\Core\Base\Controller;
 use FacturaScripts\Core\Base\ControllerPermissions;
 use FacturaScripts\Core\Model\Base\BusinessDocument;
-use FacturaScripts\Core\Model\Producto;
-use FacturaScripts\Core\Model\Variante;
-use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\Asiento;
 use FacturaScripts\Dinamic\Model\Cliente;
 use FacturaScripts\Dinamic\Model\CodeModel;
@@ -80,19 +77,13 @@ class CopyModel extends Controller
             $this->autocompleteAction();
             return;
         } elseif (false === $this->loadModel()) {
-            Tools::log()->warning('record-not-found');
+            $this->toolBox()->i18nLog()->warning('record-not-found');
             return;
         }
 
         // si no es un documento de compra o venta, cargamos su plantilla
-        switch ($this->modelClass) {
-            case 'Asiento':
-                $this->setTemplate(self::TEMPLATE_ASIENTO);
-                break;
-
-            case 'Producto':
-                $this->setTemplate('CopyProducto');
-                break;
+        if ($this->modelClass === 'Asiento') {
+            $this->setTemplate(self::TEMPLATE_ASIENTO);
         }
 
         $this->title .= ' ' . $this->model->primaryDescription();
@@ -115,24 +106,18 @@ class CopyModel extends Controller
                 case 'Asiento':
                     $this->saveAccountingEntry();
                     break;
-
-                case 'Producto':
-                    $this->saveProduct();
-                    break;
             }
         }
     }
 
-    protected function autocompleteAction(): void
+    protected function autocompleteAction()
     {
         $this->setTemplate(false);
         $results = [];
+        $utils = $this->toolBox()->utils();
         $data = $this->request->request->all();
         foreach ($this->codeModel->search($data['source'], $data['fieldcode'], $data['fieldtitle'], $data['term']) as $value) {
-            $results[] = [
-                'key' => Tools::fixHtml($value->code),
-                'value' => Tools::fixHtml($value->description)
-            ];
+            $results[] = ['key' => $utils->fixHtml($value->code), 'value' => $utils->fixHtml($value->description)];
         }
 
         $this->response->setContent(json_encode($results));
@@ -151,21 +136,21 @@ class CopyModel extends Controller
         return $this->model->loadFromCode($this->modelCode);
     }
 
-    protected function saveDocumentEnd(BusinessDocument $newDoc): void
+    protected function saveDocumentEnd(BusinessDocument $newDoc)
     {
         $lines = $newDoc->getLines();
         if (false === Calculator::calculate($newDoc, $lines, true)) {
-            Tools::log()->warning('record-save-error');
+            $this->toolBox()->i18nLog()->warning('record-save-error');
             $this->dataBase->rollback();
             return;
         }
 
         $this->dataBase->commit();
-        Tools::log()->notice('record-updated-correctly');
+        $this->toolBox()->i18nLog()->notice('record-updated-correctly');
         $this->redirect($newDoc->url() . '&action=save-ok');
     }
 
-    protected function saveAccountingEntry(): void
+    protected function saveAccountingEntry()
     {
         if (false === $this->validateFormToken()) {
             return;
@@ -187,7 +172,7 @@ class CopyModel extends Controller
 
         $fecha = $this->request->request->get('fecha');
         if (false === $newEntry->setDate($fecha) || false === $newEntry->save()) {
-            Tools::log()->warning('record-save-error');
+            $this->toolBox()->i18nLog()->warning('record-save-error');
             $this->dataBase->rollback();
             return;
         }
@@ -197,18 +182,18 @@ class CopyModel extends Controller
             $newLine = $newEntry->getNewLine();
             $newLine->loadFromData($line->toArray(), ['idasiento', 'idpartida', 'idsubcuenta']);
             if (false === $newLine->save()) {
-                Tools::log()->warning('record-save-error');
+                $this->toolBox()->i18nLog()->warning('record-save-error');
                 $this->dataBase->rollback();
                 return;
             }
         }
 
         $this->dataBase->commit();
-        Tools::log()->notice('record-updated-correctly');
+        $this->toolBox()->i18nLog()->notice('record-updated-correctly');
         $this->redirect($newEntry->url() . '&action=save-ok');
     }
 
-    protected function savePurchaseDocument(): void
+    protected function savePurchaseDocument()
     {
         if (false === $this->validateFormToken()) {
             return;
@@ -217,7 +202,7 @@ class CopyModel extends Controller
         // buscamos el proveedor
         $subject = new Proveedor();
         if (false === $subject->loadFromCode($this->request->request->get('codproveedor'))) {
-            Tools::log()->warning('record-not-found');
+            $this->toolBox()->i18nLog()->warning('record-not-found');
             return;
         }
 
@@ -238,7 +223,7 @@ class CopyModel extends Controller
         $newDoc->numproveedor = $this->request->request->get('numproveedor');
         $newDoc->observaciones = $this->request->request->get('observaciones');
         if (false === $newDoc->save()) {
-            Tools::log()->warning('record-save-error');
+            $this->toolBox()->i18nLog()->warning('record-save-error');
             $this->dataBase->rollback();
             return;
         }
@@ -247,7 +232,7 @@ class CopyModel extends Controller
         foreach ($this->model->getLines() as $line) {
             $newLine = $newDoc->getNewLine($line->toArray());
             if (false === $newLine->save()) {
-                Tools::log()->warning('record-save-error');
+                $this->toolBox()->i18nLog()->warning('record-save-error');
                 $this->dataBase->rollback();
                 return;
             }
@@ -256,7 +241,7 @@ class CopyModel extends Controller
         $this->saveDocumentEnd($newDoc);
     }
 
-    protected function saveSalesDocument(): void
+    protected function saveSalesDocument()
     {
         if (false === $this->validateFormToken()) {
             return;
@@ -265,7 +250,7 @@ class CopyModel extends Controller
         // buscamos el cliente
         $subject = new Cliente();
         if (false === $subject->loadFromCode($this->request->request->get('codcliente'))) {
-            Tools::log()->warning('record-not-found');
+            $this->toolBox()->i18nLog()->warning('record-not-found');
             return;
         }
 
@@ -286,7 +271,7 @@ class CopyModel extends Controller
         $newDoc->numero2 = $this->request->request->get('numero2');
         $newDoc->observaciones = $this->request->request->get('observaciones');
         if (false === $newDoc->save()) {
-            Tools::log()->warning('record-save-error');
+            $this->toolBox()->i18nLog()->warning('record-save-error');
             $this->dataBase->rollback();
             return;
         }
@@ -295,84 +280,12 @@ class CopyModel extends Controller
         foreach ($this->model->getLines() as $line) {
             $newLine = $newDoc->getNewLine($line->toArray());
             if (false === $newLine->save()) {
-                Tools::log()->warning('record-save-error');
+                $this->toolBox()->i18nLog()->warning('record-save-error');
                 $this->dataBase->rollback();
                 return;
             }
         }
 
         $this->saveDocumentEnd($newDoc);
-    }
-
-    protected function saveProduct(): void
-    {
-        if (false === $this->validateFormToken()) {
-            return;
-        }
-
-        $this->dataBase->beginTransaction();
-
-        // obtenemos el producto origen
-        /** @var Producto $productoOrigen */
-        $productoOrigen = $this->model;
-
-        // obtenemos las variantes del producto origen
-        $variantesProductoOrigen = $productoOrigen->getVariants();
-
-        // creamos el nuevo producto y copiamos los campos del producto origen
-        $productoDestino = new Producto();
-
-        $camposProducto = array_keys((new Producto())->getModelFields());
-        $camposExcluidos = ['actualizado', 'descripcion', 'fechaalta', 'idproducto', 'referencia', 'stockfis'];
-
-        foreach ($camposProducto as $campo) {
-            if (false === in_array($campo, $camposExcluidos)) {
-                $productoDestino->{$campo} = $productoOrigen->{$campo};
-            }
-        }
-
-        $productoDestino->descripcion = $this->request->request->get('descripcion');
-        $productoDestino->referencia = $this->request->request->get('referencia');
-
-        if (false === $productoDestino->save()) {
-            Tools::log()->warning('record-save-error');
-            $this->dataBase->rollback();
-            return;
-        }
-
-        // creamos las nuevas variantes
-        $camposVariante = array_keys((new Variante())->getModelFields());
-        $camposExcluidos = ['idvariante', 'idproducto', 'referencia', 'stockfis'];
-
-        foreach ($variantesProductoOrigen as $variante) {
-            // Como al crear un producto siempre se crea
-            // una variante principal aprovechamos esta
-            // y la modificamos para que el producto destino
-            // no tenga una variante mas que el producto origen
-            if ($variante === reset($variantesProductoOrigen)) {
-                // si es el primer elemento del array, modificamos la variante existente
-                $varianteDestino = $productoDestino->getVariants()[0];
-            } else {
-                $varianteDestino = new Variante();
-            }
-
-            foreach ($camposVariante as $campo) {
-                if (false === in_array($campo, $camposExcluidos)) {
-                    $varianteDestino->{$campo} = $variante->{$campo};
-                }
-            }
-
-            // asignamos variantes al producto nuevo
-            $varianteDestino->idproducto = $productoDestino->idproducto;
-            if (false === $varianteDestino->save()) {
-                Tools::log()->warning('record-save-error');
-                $this->dataBase->rollback();
-                return;
-            }
-        }
-
-        $this->dataBase->commit();
-        Tools::log()->notice('record-updated-correctly');
-        $this->redirect($productoDestino->url() . '&action=save-ok');
     }
 }

@@ -106,10 +106,9 @@ abstract class ListBusinessDocument extends ListController
         $this->addFilterCheckbox($viewName, 'totalrecargo', 'surcharge', 'totalrecargo', '!=', 0);
         $this->addFilterCheckbox($viewName, 'totalirpf', 'retention', 'totalirpf', '!=', 0);
         $this->addFilterCheckbox($viewName, 'totalsuplidos', 'supplied-amount', 'totalsuplidos', '!=', 0);
-        $this->addFilterCheckbox($viewName, 'numdocs', 'has-attachments', 'numdocs', '!=', 0);
     }
 
-    protected function createViewLines(string $viewName, string $modelName): void
+    protected function createViewLines(string $viewName, string $modelName)
     {
         $this->addView($viewName, $modelName, 'lines', 'fas fa-list');
         $this->addSearchFields($viewName, ['referencia', 'descripcion']);
@@ -150,7 +149,6 @@ abstract class ListBusinessDocument extends ListController
         $this->addFilterNumber($viewName, 'pvptotal-gt', 'amount', 'pvptotal');
         $this->addFilterNumber($viewName, 'pvptotal-lt', 'amount', 'pvptotal', '<=');
 
-        $this->addFilterCheckbox($viewName, 'no-ref', 'no-reference', 'referencia', 'IS', null);
         $this->addFilterCheckbox($viewName, 'recargo', 'surcharge', 'recargo', '!=', 0);
         $this->addFilterCheckbox($viewName, 'irpf', 'retention', 'irpf', '!=', 0);
         $this->addFilterCheckbox($viewName, 'suplido', 'supplied', 'suplido');
@@ -234,9 +232,6 @@ abstract class ListBusinessDocument extends ListController
             case 'approve-document-same-date':
                 BusinessDocumentGenerator::setSameDate(true);
                 return $this->approveDocumentAction($codes, $model, $allowUpdate, $this->dataBase);
-
-            case 'generate-accounting-entries':
-                return $this->generateAccountingEntriesAction($model, $allowUpdate, $this->dataBase);
 
             case 'group-document':
                 return $this->groupDocumentAction($codes, $model);

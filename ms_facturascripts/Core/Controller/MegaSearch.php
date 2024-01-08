@@ -21,7 +21,6 @@ namespace FacturaScripts\Core\Controller;
 
 use FacturaScripts\Core\Base\Controller;
 use FacturaScripts\Core\Base\ControllerPermissions;
-use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Model\Page;
 use FacturaScripts\Dinamic\Model\User;
 use Symfony\Component\HttpFoundation\Response;
@@ -58,7 +57,6 @@ class MegaSearch extends Controller
     public function getPageData(): array
     {
         $data = parent::getPageData();
-        $data['title'] = 'mega-search';
         $data['showonmenu'] = false;
         return $data;
     }
@@ -77,7 +75,7 @@ class MegaSearch extends Controller
         $this->sections = [];
 
         $query = $this->request->request->get('query', '');
-        $this->query = Tools::noHtml(mb_strtolower($query, 'UTF8'));
+        $this->query = $this->toolBox()->utils()->noHtml(mb_strtolower($query, 'UTF8'));
         if ($this->query !== '') {
             $this->search();
         }
@@ -90,7 +88,7 @@ class MegaSearch extends Controller
     {
         $results = [];
         $pageModel = new Page();
-        $i18n = Tools::lang();
+        $i18n = $this->toolBox()->i18n();
         foreach ($pageModel->all([], [], 0, 0) as $page) {
             if (!$page->showonmenu) {
                 continue;
