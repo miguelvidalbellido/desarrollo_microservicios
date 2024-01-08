@@ -17,4 +17,4 @@ package-lock.json
 *.cache
 *.lock
 mysql/
-ms_facturascripts/
+ms_facturascripts
